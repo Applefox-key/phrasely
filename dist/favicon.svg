@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <!-- Speech bubble filled teal, tail bottom-left -->
+  <rect x="2" y="2" width="26" height="20" rx="5" ry="5" fill="#0d9488"/>
+  <polygon points="6,22 2,30 12,22" fill="#0d9488"/>
+  <!-- Three dots -->
+  <circle cx="9"  cy="12" r="2.4" fill="white"/>
+  <circle cx="16" cy="12" r="2.4" fill="white"/>
+  <circle cx="23" cy="12" r="2.4" fill="white"/>
+</svg>

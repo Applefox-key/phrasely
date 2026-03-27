@@ -8,6 +8,25 @@ export default function Navbar() {
   const location = useLocation();
 
   const isActive = (path: string) => location.pathname === path;
+  const isTraining = location.pathname === '/training';
+
+  if (isTraining) {
+    return (
+      <nav className="bg-white dark:bg-slate-800 border-b border-gray-200 dark:border-slate-700 sticky top-0 z-40">
+        <div className="px-4 h-14 flex items-center">
+          <Link
+            to="/expressions"
+            className="flex items-center gap-1.5 text-sm text-gray-500 dark:text-gray-400 hover:text-teal-600 dark:hover:text-teal-400 transition-colors">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M19 12H5" />
+              <path d="M12 19l-7-7 7-7" />
+            </svg>
+            Expressions
+          </Link>
+        </div>
+      </nav>
+    );
+  }
 
   return (
     <nav className="bg-white dark:bg-slate-800 border-b border-gray-200 dark:border-slate-700 sticky top-0 z-40">

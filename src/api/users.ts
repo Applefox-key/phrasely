@@ -27,4 +27,15 @@ export const usersApi = {
 
   resetPassword: (password: string, resetToken: string) =>
     apiClient.patch('/resetpassword', { password, resetToken }).then((r) => r.data),
+
+  updateSettings: async (settings: Record<string, unknown>) => {
+    const current = await usersApi.getMe();
+    const existing = current.settings ? JSON.parse(current.settings as string) : {};
+    const merged = { ...existing, ...settings };
+    const fd = new FormData();
+    fd.append('settings', JSON.stringify(merged));
+    return apiClient.patch('/users', fd, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    }).then((r) => r.data.data ?? r.data);
+  },
 };

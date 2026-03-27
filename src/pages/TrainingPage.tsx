@@ -141,7 +141,7 @@ export default function TrainingPage() {
   const hint = current?.hintForReading;
 
   return (
-    <div className="flex flex-col min-h-[calc(100vh-3.5rem)]">
+    <div className="flex flex-col h-[calc(100vh-3.5rem)]">
       {/* Header */}
       <div className="bg-white dark:bg-slate-800 border-b border-gray-200 dark:border-slate-700 px-4 py-3 flex items-center justify-between gap-4 flex-wrap">
         {labels && labels.length > 0 && (
@@ -225,7 +225,7 @@ export default function TrainingPage() {
       </div>
 
       {/* Main content */}
-      <div className="flex-1 flex flex-col items-center justify-start px-4 py-3 sm:py-8 gap-3 sm:gap-6">
+      <div className="flex-1 flex flex-col items-center justify-start overflow-y-auto px-4 py-3 sm:py-8 gap-3 sm:gap-6 pb-20 sm:pb-8">
         {/* Card */}
         <div
           className="w-full max-w-2xl cursor-pointer"
@@ -246,7 +246,7 @@ export default function TrainingPage() {
               <p className="text-sm text-gray-400 dark:text-gray-500 mb-3 text-center">
                 {index + 1} / {list.length}
               </p>
-              <div className="text-xl text-gray-900 dark:text-gray-100 text-center leading-relaxed">
+              <div className="text-xl text-gray-900 dark:text-gray-100 text-center leading-relaxed select-none">
                 {current &&
                   addSpanToExpInPrase(
                     { expression: current.expression, phrase: current.phrase, note: current.note },
@@ -388,8 +388,6 @@ export default function TrainingPage() {
           </div>
         </div>
 
-        {/* Spacer so fixed nav doesn't cover content on mobile */}
-        <div className="h-20 sm:hidden shrink-0" />
       </div>
 
       {/* Celebration overlay */}

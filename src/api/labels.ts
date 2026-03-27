@@ -3,7 +3,7 @@ import type { Label } from '../types';
 
 export const labelsApi = {
   getAll: () =>
-    apiClient.get<Label[]>('/labels').then((r) => r.data),
+    apiClient.get<{ data: Label[] }>('/labels').then((r) => r.data.data ?? r.data),
 
   create: (name: string) =>
     apiClient.post<Label>('/labels', { name }).then((r) => r.data),

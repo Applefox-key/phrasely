@@ -11,13 +11,13 @@ export interface ExpressionFilters {
 
 export const expressionsApi = {
   getAll: (params?: ExpressionFilters) =>
-    apiClient.get<ExpressionData[]>('/expressions', { params }).then((r) => r.data),
+    apiClient.get<{ data: ExpressionData[] }>('/expressions', { params }).then((r) => r.data.data ?? r.data),
 
   getByFolders: (params?: ExpressionFilters) =>
-    apiClient.get<Record<string, ExpressionData[]>>('/expressions/byfolders', { params }).then((r) => r.data),
+    apiClient.get<{ data: Record<string, ExpressionData[]> }>('/expressions/byfolders', { params }).then((r) => r.data.data ?? r.data),
 
   getUnread: (offset_ms?: number) =>
-    apiClient.get<ExpressionData[]>('/expressions/unread', { params: { offset_ms } }).then((r) => r.data),
+    apiClient.get<{ data: ExpressionData[] }>('/expressions/unread', { params: { offset_ms } }).then((r) => r.data.data ?? r.data),
 
   create: (list: Partial<ExpressionData>[]) =>
     apiClient.post<ExpressionData[]>('/expressions', { list }).then((r) => r.data),

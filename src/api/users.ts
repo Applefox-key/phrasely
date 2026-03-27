@@ -3,7 +3,7 @@ import type { User, Credentials, RegisterData } from '../types';
 
 export const usersApi = {
   getMe: () =>
-    apiClient.get<User>('/users').then((r) => r.data),
+    apiClient.get<{ data: User }>('/users').then((r) => r.data.data ?? r.data),
 
   login: (credentials: Credentials) =>
     apiClient.post('/users/login', credentials).then((r) => r.data),

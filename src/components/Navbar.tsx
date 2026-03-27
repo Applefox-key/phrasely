@@ -19,14 +19,17 @@ export default function Navbar() {
             <span>Phrasely</span>
           </Link>
 
-          {/* Nav links */}
-          {isAuthenticated && (
-            <div className="hidden sm:flex items-center gap-1">
-              <NavLink to="/training" active={isActive('/training')}>Training</NavLink>
-              <NavLink to="/expressions" active={isActive('/expressions')}>Expressions</NavLink>
-              <NavLink to="/profile" active={isActive('/profile')}>Profile</NavLink>
-            </div>
-          )}
+          {/* Desktop nav links */}
+          <div className="hidden sm:flex items-center gap-1">
+            {isAuthenticated && (
+              <>
+                <NavLink to="/training" active={isActive('/training')}>Training</NavLink>
+                <NavLink to="/expressions" active={isActive('/expressions')}>Expressions</NavLink>
+                <NavLink to="/profile" active={isActive('/profile')}>Profile</NavLink>
+              </>
+            )}
+            <NavLink to="/about" active={isActive('/about')}>About</NavLink>
+          </div>
 
           {/* Right actions */}
           <div className="flex items-center gap-2">
@@ -34,17 +37,19 @@ export default function Navbar() {
             <AppSwitcher />
             {isAuthenticated ? (
               <div className="flex items-center gap-2">
-                {user?.avatar ? (
-                  <img
-                    src={user.avatar}
-                    alt={user.name}
-                    className="w-8 h-8 rounded-full object-cover border border-gray-200 dark:border-slate-600"
-                  />
-                ) : (
-                  <div className="w-8 h-8 rounded-full bg-teal-100 dark:bg-teal-800 text-teal-700 dark:text-teal-300 flex items-center justify-center text-sm font-medium">
-                    {user?.name?.[0]?.toUpperCase() ?? 'U'}
-                  </div>
-                )}
+                <Link to="/profile" title="Profile">
+                  {user?.avatar ? (
+                    <img
+                      src={user.avatar}
+                      alt={user.name}
+                      className="w-8 h-8 rounded-full object-cover border border-gray-200 dark:border-slate-600 hover:ring-2 hover:ring-teal-400 transition-all"
+                    />
+                  ) : (
+                    <div className="w-8 h-8 rounded-full bg-teal-100 dark:bg-teal-800 text-teal-700 dark:text-teal-300 flex items-center justify-center text-sm font-medium hover:ring-2 hover:ring-teal-400 transition-all cursor-pointer">
+                      {user?.name?.[0]?.toUpperCase() ?? 'U'}
+                    </div>
+                  )}
+                </Link>
                 <button
                   onClick={() => logout()}
                   className="text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hidden sm:block"
@@ -69,14 +74,28 @@ export default function Navbar() {
         </div>
 
         {/* Mobile nav */}
-        {isAuthenticated && (
-          <div className="sm:hidden flex items-center gap-1 pb-2 overflow-x-auto">
-            <NavLink to="/training" active={isActive('/training')}>Training</NavLink>
-            <NavLink to="/expressions" active={isActive('/expressions')}>Expressions</NavLink>
-            <NavLink to="/profile" active={isActive('/profile')}>Profile</NavLink>
+        <div className="sm:hidden flex items-center gap-1 pb-2 overflow-x-auto">
+          {isAuthenticated ? (
+            <>
+              <NavLink to="/training" active={isActive('/training')}>Training</NavLink>
+              <NavLink to="/expressions" active={isActive('/expressions')}>Expressions</NavLink>
+              <NavLink to="/about" active={isActive('/about')}>About</NavLink>
+              <button
+                onClick={() => logout()}
+                title="Sign out"
+                className="ml-auto p-1.5 rounded-md text-gray-400 dark:text-gray-500 hover:text-red-500 dark:hover:text-red-400 hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors shrink-0"
+              >
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+                  <polyline points="16 17 21 12 16 7" />
+                  <line x1="21" y1="12" x2="9" y2="12" />
+                </svg>
+              </button>
+            </>
+          ) : (
             <NavLink to="/about" active={isActive('/about')}>About</NavLink>
-          </div>
-        )}
+          )}
+        </div>
       </div>
     </nav>
   );

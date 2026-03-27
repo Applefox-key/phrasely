@@ -187,21 +187,29 @@ export class Expression {
       let nextDate_ = new Date(this.#nextDate);
       if (stage_ > 0) {
         const history_ = this.historySort;
+        // Build an array indexed by day position so gaps can be filled
+        const pastEntries: (string | null)[] = new Array(stage_).fill(null);
         let count = 0;
         for (let i = 0; i < history_.length; i++) {
           if (history_[i].action.includes('read')) {
             const day = new Date(history_[i].date).toString().slice(0, 10);
-            result.unshift(
-              `🟢: Day ${stage_ - count}: ${day} ✔${
-                new Date().setHours(0, 0, 0, 0) ===
-                new Date(history_[i].date).setHours(0, 0, 0, 0)
-                  ? ':Today'
-                  : ''
-              }`
-            );
+            const isToday =
+              new Date().setHours(0, 0, 0, 0) ===
+              new Date(history_[i].date).setHours(0, 0, 0, 0);
+            // Most-recent read event → highest day number (stage_ - count)
+            pastEntries[stage_ - 1 - count] = `🟢: Day ${stage_ - count}:${day} ✔${
+              isToday ? ':Today' : ''
+            }`;
             count++;
           }
           if (count === stage_) break;
+        }
+        // Push all past days in order; fill any gaps (incomplete history)
+        for (let j = 0; j < stage_; j++) {
+          result.push(
+            pastEntries[j] ??
+              `🟢: Day ${j + 1}:${new Date().toString().slice(0, 10)} ✔`
+          );
         }
       }
       if (!this.started || this.#status === 'new' || this.#status === 'paused')

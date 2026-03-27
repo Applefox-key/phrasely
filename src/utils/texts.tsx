@@ -96,6 +96,7 @@ export const addSpanToExpInPrase = (
           return (
             <span key={'ph' + i} className="relative group/note inline">
               {markEl}
+              <sup className="text-teal-500 dark:text-teal-400 text-[10px] ml-0.5 not-italic font-normal select-none">●</sup>
               <span className="pointer-events-none absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 whitespace-nowrap rounded bg-gray-800 dark:bg-slate-700 px-2 py-1 text-xs text-white opacity-0 transition-opacity group-hover/note:opacity-100 z-20 shadow-md">
                 {item.note}
               </span>

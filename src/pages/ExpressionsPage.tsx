@@ -1,20 +1,20 @@
-import { useState, useMemo, FormEvent } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { expressionsApi } from '../api/expressions';
-import { labelsApi } from '../api/labels';
-import { Expression } from '../classes/Expression';
-import type { ExpressionData, Label } from '../types';
-import ExpressionRow from '../components/expressions/ExpressionRow';
-import EditModal from '../components/expressions/EditModal';
-import InfoModal from '../components/expressions/InfoModal';
-import AddFromTextModal from '../components/expressions/AddFromTextModal';
-import AddSingleModal from '../components/expressions/AddSingleModal';
-import { useAuthStore } from '../store/authStore';
-import { useDemoStore } from '../demo/demoStore';
-import { useDemoExpressions, useDemoLabels } from '../demo/useDemoExpressions';
+import { useState, useMemo, FormEvent } from "react";
+import { useNavigate } from "react-router-dom";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { expressionsApi } from "../api/expressions";
+import { labelsApi } from "../api/labels";
+import { Expression } from "../classes/Expression";
+import type { ExpressionData, Label } from "../types";
+import ExpressionRow from "../components/expressions/ExpressionRow";
+import EditModal from "../components/expressions/EditModal";
+import InfoModal from "../components/expressions/InfoModal";
+import AddFromTextModal from "../components/expressions/AddFromTextModal";
+import AddSingleModal from "../components/expressions/AddSingleModal";
+import { useAuthStore } from "../store/authStore";
+import { useDemoStore } from "../demo/demoStore";
+import { useDemoExpressions, useDemoLabels } from "../demo/useDemoExpressions";
 
-type Panel = 'manage' | 'labels' | 'settings' | null;
+type Panel = "manage" | "labels" | "settings" | null;
 
 export default function ExpressionsPage() {
   const navigate = useNavigate();
@@ -24,13 +24,13 @@ export default function ExpressionsPage() {
 
   // ── real server state (disabled in demo) ──────────────────────
   const { data: rawExpressionsReal = [], isLoading: loadingReal } = useQuery({
-    queryKey: ['expressions'],
+    queryKey: ["expressions"],
     queryFn: () => expressionsApi.getAll(),
     enabled: !isDemo,
   });
 
   const { data: labelsReal = [] } = useQuery({
-    queryKey: ['labels'],
+    queryKey: ["labels"],
     queryFn: labelsApi.getAll,
     enabled: !isDemo,
   });
@@ -46,34 +46,34 @@ export default function ExpressionsPage() {
 
   // ── real mutations (no-ops in demo) ───────────────────────────
   const updateMutation = useMutation({
-    mutationFn: (data: ReturnType<Expression['getUpdatedFields']>) =>
-      expressionsApi.update(data),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['expressions'] }),
+    mutationFn: (data: ReturnType<Expression["getUpdatedFields"]>) => expressionsApi.update(data),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["expressions"] }),
   });
 
   const deleteMutation = useMutation({
     mutationFn: (id: number) => expressionsApi.delete(id),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['expressions'] }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["expressions"] }),
   });
 
   const createMutation = useMutation({
     mutationFn: (list: Partial<ExpressionData>[]) => expressionsApi.create(list),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['expressions'] }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["expressions"] }),
   });
 
   const batchDeleteMutation = useMutation({
     mutationFn: (ids: number[]) => expressionsApi.deleteSome(ids),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['expressions'] }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["expressions"] }),
   });
 
   // ── local UI state ────────────────────────────────────────────
   const [activePanel, setActivePanel] = useState<Panel>(null);
+  const [filtersOpen, setFiltersOpen] = useState(false);
   const [groupByLabel, setGroupByLabel] = useState(false);
-  const [filterLabel, setFilterLabel] = useState('');
-  const [filterStatus, setFilterStatus] = useState('');
-  const [filterStage, setFilterStage] = useState('');
+  const [filterLabel, setFilterLabel] = useState("");
+  const [filterStatus, setFilterStatus] = useState("");
+  const [filterStage, setFilterStage] = useState("");
   const [filterInQueue, setFilterInQueue] = useState(false);
-  const [filterText, setFilterText] = useState('');
+  const [filterText, setFilterText] = useState("");
   const [editTarget, setEditTarget] = useState<Expression | null>(null);
   const [infoTarget, setInfoTarget] = useState<Expression | null>(null);
   const [showAddSingle, setShowAddSingle] = useState(false);
@@ -81,19 +81,20 @@ export default function ExpressionsPage() {
   const [showAddFile, setShowAddFile] = useState(false);
   const [selectMode, setSelectMode] = useState(false);
   const [selected, setSelected] = useState<Set<number>>(new Set());
-  const [batchAction, setBatchAction] = useState<'delete' | 'label' | 'status'>('delete');
+  const [batchAction, setBatchAction] = useState<"delete" | "label" | "status" | "queue" | "download">("delete");
   const [batchLabel, setBatchLabel] = useState<number | null>(null);
-  const [batchStatus, setBatchStatus] = useState('active');
+  const [batchStatus, setBatchStatus] = useState("active");
+  const [batchQueueAction, setBatchQueueAction] = useState<"add" | "remove">("add");
 
   // ── label management ──────────────────────────────────────────
-  const [newLabelName, setNewLabelName] = useState('');
+  const [newLabelName, setNewLabelName] = useState("");
   const createLabelMutation = useMutation({
     mutationFn: (name: string) => labelsApi.create(name),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['labels'] }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["labels"] }),
   });
   const deleteLabelMutation = useMutation({
     mutationFn: (id: number) => labelsApi.delete(id),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['labels'] }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["labels"] }),
   });
 
   // ── demo mutation helpers ─────────────────────────────────────
@@ -107,7 +108,7 @@ export default function ExpressionsPage() {
       .filter((e) => {
         if (filterLabel && String(e.labelid) !== filterLabel) return false;
         if (filterStatus && e.status !== filterStatus) return false;
-        if (filterStage !== '' && String(e.stage) !== filterStage) return false;
+        if (filterStage !== "" && String(e.stage) !== filterStage) return false;
         if (filterInQueue && !e.inQueue) return false;
         if (filterText) {
           const q = filterText.toLowerCase();
@@ -121,7 +122,7 @@ export default function ExpressionsPage() {
     if (!groupByLabel) return null;
     const map = new Map<string, Expression[]>();
     for (const e of expressions) {
-      const key = e.label ?? 'Unlabeled';
+      const key = e.label ?? "Unlabeled";
       if (!map.has(key)) map.set(key, []);
       map.get(key)!.push(e);
     }
@@ -158,44 +159,77 @@ export default function ExpressionsPage() {
 
   const executeBatchAction = () => {
     const ids = Array.from(selected);
-    if (batchAction === 'delete') {
+    if (batchAction === "delete") {
       if (isDemo) {
         demoStore.deleteSomeExpressions(ids);
-        setSelectMode(false); setSelected(new Set());
+        setSelectMode(false);
+        setSelected(new Set());
       } else {
         batchDeleteMutation.mutate(ids, {
-          onSuccess: () => { setSelectMode(false); setSelected(new Set()); },
+          onSuccess: () => {
+            setSelectMode(false);
+            setSelected(new Set());
+          },
         });
       }
-    } else if (batchAction === 'label') {
+    } else if (batchAction === "label") {
       if (isDemo) {
         ids.forEach((id) => demoStore.updateExpression({ id, labelid: batchLabel }));
-        setSelectMode(false); setSelected(new Set());
+        setSelectMode(false);
+        setSelected(new Set());
       } else {
-        expressionsApi.updateOneField(ids, 'labelid', batchLabel).then(() => {
-          qc.invalidateQueries({ queryKey: ['expressions'] });
-          setSelectMode(false); setSelected(new Set());
+        expressionsApi.updateOneField(ids, "labelid", batchLabel).then(() => {
+          qc.invalidateQueries({ queryKey: ["expressions"] });
+          setSelectMode(false);
+          setSelected(new Set());
         });
       }
-    } else if (batchAction === 'status') {
+    } else if (batchAction === "status") {
       if (isDemo) {
         ids.forEach((id) => demoStore.updateExpression({ id, status: batchStatus }));
-        setSelectMode(false); setSelected(new Set());
+        setSelectMode(false);
+        setSelected(new Set());
       } else {
-        expressionsApi.updateOneField(ids, 'status', batchStatus).then(() => {
-          qc.invalidateQueries({ queryKey: ['expressions'] });
-          setSelectMode(false); setSelected(new Set());
+        expressionsApi.updateOneField(ids, "status", batchStatus).then(() => {
+          qc.invalidateQueries({ queryKey: ["expressions"] });
+          setSelectMode(false);
+          setSelected(new Set());
         });
       }
+    } else if (batchAction === "queue") {
+      const inQueue = batchQueueAction === "add";
+      if (isDemo) {
+        ids.forEach((id) => demoStore.updateExpression({ id, inQueue }));
+        setSelectMode(false);
+        setSelected(new Set());
+      } else {
+        expressionsApi.updateOneField(ids, "inQueue", inQueue).then(() => {
+          qc.invalidateQueries({ queryKey: ["expressions"] });
+          setSelectMode(false);
+          setSelected(new Set());
+        });
+      }
+    } else if (batchAction === "download") {
+      const selectedExpressions = rawExpressions.filter((e) => selected.has(e.id));
+      const lines = selectedExpressions.map((e) => `${e.expression}; ${e.phrase}`).join("\n");
+      const blob = new Blob([lines], { type: "text/plain" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "phrasely-export.txt";
+      a.click();
+      URL.revokeObjectURL(url);
     }
   };
 
   const exportTxt = () => {
-    const lines = rawExpressions.map((e) => `${e.expression}; ${e.phrase}`).join('\n');
-    const blob = new Blob([lines], { type: 'text/plain' });
+    const lines = rawExpressions.map((e) => `${e.expression}; ${e.phrase}`).join("\n");
+    const blob = new Blob([lines], { type: "text/plain" });
     const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url; a.download = 'phrasely-export.txt'; a.click();
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "phrasely-export.txt";
+    a.click();
     URL.revokeObjectURL(url);
   };
 
@@ -207,7 +241,12 @@ export default function ExpressionsPage() {
     }
   };
 
-  const handleAddSingle = (data: { expression: string; phrase: string; note: string | null; labelid: number | null }) => {
+  const handleAddSingle = (data: {
+    expression: string;
+    phrase: string;
+    note: string | null;
+    labelid: number | null;
+  }) => {
     if (isDemo) {
       demoStore.addExpression(data);
     } else {
@@ -238,42 +277,47 @@ export default function ExpressionsPage() {
     <div className="flex h-[calc(100vh-3.5rem)]">
       {/* Sidebar */}
       <aside className="w-12 shrink-0 bg-white dark:bg-slate-800 border-r border-gray-200 dark:border-slate-700 flex flex-col items-center py-3 gap-2">
-        <SidebarBtn
-          title="Manage"
-          active={activePanel === 'manage'}
-          onClick={() => togglePanel('manage')}
-        >⋯</SidebarBtn>
-        <SidebarBtn
-          title="Add expression"
-          onClick={() => setShowAddSingle(true)}
-        >+</SidebarBtn>
-        <SidebarBtn
-          title="Labels"
-          active={activePanel === 'labels'}
-          onClick={() => togglePanel('labels')}
-        >🗂</SidebarBtn>
-        <SidebarBtn
-          title="Settings"
-          active={activePanel === 'settings'}
-          onClick={() => togglePanel('settings')}
-        >⚙</SidebarBtn>
+        <SidebarBtn title="Manage" active={activePanel === "manage"} onClick={() => togglePanel("manage")}>
+          ⋯
+        </SidebarBtn>
+        <SidebarBtn title="Add expression" onClick={() => setShowAddSingle(true)}>
+          +
+        </SidebarBtn>
+        <SidebarBtn title="Labels" active={activePanel === "labels"} onClick={() => togglePanel("labels")}>
+          🗂
+        </SidebarBtn>
+        <SidebarBtn title="Settings" active={activePanel === "settings"} onClick={() => togglePanel("settings")}>
+          ⚙
+        </SidebarBtn>
         <div className="flex-1" />
-        <SidebarBtn title="Go to training" onClick={() => navigate('/training')}>←</SidebarBtn>
+        <SidebarBtn title="Go to training" onClick={() => navigate("/training")}>
+          ←
+        </SidebarBtn>
       </aside>
 
       {/* Panel */}
       {activePanel && (
         <div className="w-56 shrink-0 bg-white dark:bg-slate-800 border-r border-gray-200 dark:border-slate-700 p-3 overflow-y-auto">
-          {activePanel === 'manage' && (
+          {activePanel === "manage" && (
             <ManagePanel
               onAddSingle={() => setShowAddSingle(true)}
-              onAddText={() => { setShowAddText(true); setActivePanel(null); }}
-              onAddFile={() => { setShowAddFile(true); setActivePanel(null); }}
-              onDeleteMode={() => { setSelectMode(true); setBatchAction('delete'); setActivePanel(null); }}
+              onAddText={() => {
+                setShowAddText(true);
+                setActivePanel(null);
+              }}
+              onAddFile={() => {
+                setShowAddFile(true);
+                setActivePanel(null);
+              }}
+              onDeleteMode={() => {
+                setSelectMode(true);
+                setBatchAction("delete");
+                setActivePanel(null);
+              }}
               onExport={exportTxt}
             />
           )}
-          {activePanel === 'labels' && (
+          {activePanel === "labels" && (
             <LabelsPanel
               labels={labels}
               newName={newLabelName}
@@ -281,7 +325,7 @@ export default function ExpressionsPage() {
               onCreate={(name) => {
                 if (isDemo) demoCreateLabel(name);
                 else createLabelMutation.mutate(name);
-                setNewLabelName('');
+                setNewLabelName("");
               }}
               onDelete={(id) => {
                 if (isDemo) demoDeleteLabel(id);
@@ -289,132 +333,169 @@ export default function ExpressionsPage() {
               }}
             />
           )}
-          {activePanel === 'settings' && (
-            <SettingsPanel />
-          )}
+          {activePanel === "settings" && <SettingsPanel />}
         </div>
       )}
 
       {/* Main */}
       <div className="flex-1 flex flex-col min-w-0">
         {/* Filter bar */}
-        <div className="bg-white dark:bg-slate-800 border-b border-gray-200 dark:border-slate-700 px-4 py-2 flex flex-wrap gap-2 items-center">
-          <button
-            onClick={() => setGroupByLabel((v) => !v)}
-            className={`text-xs px-3 py-1.5 rounded-md border transition-colors ${
-              groupByLabel
-                ? 'bg-teal-50 dark:bg-teal-900/30 border-teal-300 dark:border-teal-700 text-teal-700 dark:text-teal-400'
-                : 'border-gray-200 dark:border-slate-600 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-slate-700'
-            }`}
-          >
-            {groupByLabel ? 'Flat list' : 'Group by label'}
-          </button>
+        <div className="bg-white dark:bg-slate-800 border-b border-gray-200 dark:border-slate-700 px-3 py-2">
+          {/* Row 1 — always visible */}
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => { setSelectMode((v) => !v); setSelected(new Set()); }}
+              className={`text-xs px-2.5 py-1.5 rounded-md border transition-colors shrink-0 ${
+                selectMode
+                  ? "bg-teal-50 dark:bg-teal-900/30 border-teal-300 dark:border-teal-700 text-teal-700 dark:text-teal-400"
+                  : "border-gray-200 dark:border-slate-600 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-slate-700"
+              }`}>
+              Select
+            </button>
 
-          <select
-            value={filterLabel}
-            onChange={(e) => setFilterLabel(e.target.value)}
-            className="text-xs border border-gray-200 dark:border-slate-600 rounded-md px-2 py-1.5 bg-white dark:bg-slate-700 text-gray-700 dark:text-gray-300"
-          >
-            <option value="">All labels</option>
-            {labels.map((l: Label) => <option key={l.id} value={l.id}>{l.name}</option>)}
-          </select>
+            <button
+              onClick={() => setGroupByLabel((v) => !v)}
+              className={`text-xs px-2.5 py-1.5 rounded-md border transition-colors shrink-0 ${
+                groupByLabel
+                  ? "bg-teal-50 dark:bg-teal-900/30 border-teal-300 dark:border-teal-700 text-teal-700 dark:text-teal-400"
+                  : "border-gray-200 dark:border-slate-600 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-slate-700"
+              }`}>
+              {groupByLabel ? "Flat" : "Group"}
+            </button>
 
-          <select
-            value={filterStatus}
-            onChange={(e) => setFilterStatus(e.target.value)}
-            className="text-xs border border-gray-200 dark:border-slate-600 rounded-md px-2 py-1.5 bg-white dark:bg-slate-700 text-gray-700 dark:text-gray-300"
-          >
-            <option value="">All statuses</option>
-            {['new', 'active', 'paused', 'completed'].map((s) => (
-              <option key={s} value={s}>{s}</option>
-            ))}
-          </select>
-
-          <select
-            value={filterStage}
-            onChange={(e) => setFilterStage(e.target.value)}
-            className="text-xs border border-gray-200 dark:border-slate-600 rounded-md px-2 py-1.5 bg-white dark:bg-slate-700 text-gray-700 dark:text-gray-300"
-          >
-            <option value="">All stages</option>
-            {Array.from({ length: 10 }, (_, i) => (
-              <option key={i} value={i}>Stage {i}</option>
-            ))}
-          </select>
-
-          <label className="flex items-center gap-1 text-xs text-gray-600 dark:text-gray-300 cursor-pointer">
             <input
-              type="checkbox"
-              checked={filterInQueue}
-              onChange={(e) => setFilterInQueue(e.target.checked)}
-              className="rounded border-gray-300"
+              type="search"
+              value={filterText}
+              onChange={(e) => setFilterText(e.target.value)}
+              placeholder="Search…"
+              className="flex-1 min-w-0 text-sm border border-gray-200 dark:border-slate-600 rounded-md px-3 py-1.5 bg-white dark:bg-slate-700 text-gray-900 dark:text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-teal-500"
             />
-            In queue
-          </label>
 
-          <input
-            type="search"
-            value={filterText}
-            onChange={(e) => setFilterText(e.target.value)}
-            placeholder="Search…"
-            className="ml-auto text-sm border border-gray-200 dark:border-slate-600 rounded-md px-3 py-1.5 bg-white dark:bg-slate-700 text-gray-900 dark:text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-teal-500 w-40"
-          />
+            <span className="text-xs text-gray-400 dark:text-gray-500 shrink-0">{expressions.length}</span>
 
-          <span className="text-xs text-gray-400 dark:text-gray-500">{expressions.length}</span>
+            <button
+              onClick={() => setFiltersOpen((v) => !v)}
+              className={`shrink-0 p-1.5 rounded-md border transition-colors ${
+                filtersOpen || filterLabel || filterStatus || filterStage || filterInQueue
+                  ? "border-teal-300 dark:border-teal-700 text-teal-600 dark:text-teal-400 bg-teal-50 dark:bg-teal-900/30"
+                  : "border-gray-200 dark:border-slate-600 text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-slate-700"
+              }`}
+              title="Filters">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
+                <path d="M3 4h18l-7 8v6l-4 2v-8L3 4z" />
+              </svg>
+            </button>
+          </div>
+
+          {/* Row 2 — collapsible filters */}
+          {filtersOpen && (
+            <div className="flex flex-wrap gap-2 mt-2 pt-2 border-t border-gray-100 dark:border-slate-700">
+              <select
+                value={filterLabel}
+                onChange={(e) => setFilterLabel(e.target.value)}
+                className="text-xs border border-gray-200 dark:border-slate-600 rounded-md px-2 py-1.5 bg-white dark:bg-slate-700 text-gray-700 dark:text-gray-300">
+                <option value="">All labels</option>
+                {labels.map((l: Label) => <option key={l.id} value={l.id}>{l.name}</option>)}
+              </select>
+
+              <select
+                value={filterStatus}
+                onChange={(e) => setFilterStatus(e.target.value)}
+                className="text-xs border border-gray-200 dark:border-slate-600 rounded-md px-2 py-1.5 bg-white dark:bg-slate-700 text-gray-700 dark:text-gray-300">
+                <option value="">All statuses</option>
+                {["new", "active", "paused", "completed"].map((s) => (
+                  <option key={s} value={s}>{s}</option>
+                ))}
+              </select>
+
+              <select
+                value={filterStage}
+                onChange={(e) => setFilterStage(e.target.value)}
+                className="text-xs border border-gray-200 dark:border-slate-600 rounded-md px-2 py-1.5 bg-white dark:bg-slate-700 text-gray-700 dark:text-gray-300">
+                <option value="">All stages</option>
+                {Array.from({ length: 10 }, (_, i) => (
+                  <option key={i} value={i}>Stage {i}</option>
+                ))}
+              </select>
+
+              <label className="flex items-center gap-1.5 text-xs text-gray-600 dark:text-gray-300 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={filterInQueue}
+                  onChange={(e) => setFilterInQueue(e.target.checked)}
+                  className="rounded border-gray-300"
+                />
+                In queue
+              </label>
+            </div>
+          )}
         </div>
 
         {/* Batch action bar */}
         {selectMode && (
           <div className="bg-teal-50 dark:bg-teal-900/20 border-b border-teal-200 dark:border-teal-800 px-4 py-2 flex flex-wrap gap-3 items-center">
-            <span className="text-sm font-medium text-teal-700 dark:text-teal-400">
-              {selected.size} selected
-            </span>
+            <span className="text-sm font-medium text-teal-700 dark:text-teal-400">{selected.size} selected</span>
             <select
               value={batchAction}
               onChange={(e) => setBatchAction(e.target.value as typeof batchAction)}
-              className="text-xs border border-teal-300 dark:border-teal-700 rounded px-2 py-1 bg-white dark:bg-slate-700 text-gray-700 dark:text-gray-300"
-            >
+              className="text-xs border border-teal-300 dark:border-teal-700 rounded px-2 py-1 bg-white dark:bg-slate-700 text-gray-700 dark:text-gray-300">
               <option value="delete">Delete</option>
               <option value="label">Assign label</option>
               <option value="status">Set status</option>
+              <option value="queue">Queue manage</option>
+              <option value="download">Download</option>
             </select>
-            {batchAction === 'label' && (
+            {batchAction === "queue" && (
               <select
-                value={batchLabel ?? ''}
-                onChange={(e) => setBatchLabel(e.target.value ? Number(e.target.value) : null)}
-                className="text-xs border border-teal-300 dark:border-teal-700 rounded px-2 py-1 bg-white dark:bg-slate-700 text-gray-700 dark:text-gray-300"
-              >
-                <option value="">No label</option>
-                {labels.map((l: Label) => <option key={l.id} value={l.id}>{l.name}</option>)}
+                value={batchQueueAction}
+                onChange={(e) => setBatchQueueAction(e.target.value as "add" | "remove")}
+                className="text-xs border border-teal-300 dark:border-teal-700 rounded px-2 py-1 bg-white dark:bg-slate-700 text-gray-700 dark:text-gray-300">
+                <option value="add">Add to queue</option>
+                <option value="remove">Remove from queue</option>
               </select>
             )}
-            {batchAction === 'status' && (
+            {batchAction === "label" && (
+              <select
+                value={batchLabel ?? ""}
+                onChange={(e) => setBatchLabel(e.target.value ? Number(e.target.value) : null)}
+                className="text-xs border border-teal-300 dark:border-teal-700 rounded px-2 py-1 bg-white dark:bg-slate-700 text-gray-700 dark:text-gray-300">
+                <option value="">No label</option>
+                {labels.map((l: Label) => (
+                  <option key={l.id} value={l.id}>
+                    {l.name}
+                  </option>
+                ))}
+              </select>
+            )}
+            {batchAction === "status" && (
               <select
                 value={batchStatus}
                 onChange={(e) => setBatchStatus(e.target.value)}
-                className="text-xs border border-teal-300 dark:border-teal-700 rounded px-2 py-1 bg-white dark:bg-slate-700 text-gray-700 dark:text-gray-300"
-              >
-                {['new', 'active', 'paused', 'completed'].map((s) => (
-                  <option key={s} value={s}>{s}</option>
+                className="text-xs border border-teal-300 dark:border-teal-700 rounded px-2 py-1 bg-white dark:bg-slate-700 text-gray-700 dark:text-gray-300">
+                {["new", "active", "paused", "completed"].map((s) => (
+                  <option key={s} value={s}>
+                    {s}
+                  </option>
                 ))}
               </select>
             )}
             <button
               onClick={executeBatchAction}
               disabled={selected.size === 0}
-              className="bg-teal-600 hover:bg-teal-700 disabled:opacity-50 text-white text-xs px-4 py-1.5 rounded-md transition-colors"
-            >
+              className="bg-teal-600 hover:bg-teal-700 disabled:opacity-50 text-white text-xs px-4 py-1.5 rounded-md transition-colors">
               Execute
             </button>
             <button
-              onClick={() => { setSelectMode(false); setSelected(new Set()); }}
-              className="text-xs text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
-            >
+              onClick={() => {
+                setSelectMode(false);
+                setSelected(new Set());
+              }}
+              className="text-xs text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200">
               Cancel
             </button>
             <button
               onClick={() => setSelected(new Set(expressions.map((e) => e.id)))}
-              className="text-xs text-teal-600 dark:text-teal-400 hover:underline"
-            >
+              className="text-xs text-teal-600 dark:text-teal-400 hover:underline">
               Select all
             </button>
           </div>
@@ -432,8 +513,7 @@ export default function ExpressionsPage() {
               <p>No expressions found</p>
               <button
                 onClick={() => setShowAddSingle(true)}
-                className="text-sm text-teal-600 dark:text-teal-400 hover:underline"
-              >
+                className="text-sm text-teal-600 dark:text-teal-400 hover:underline">
                 Add your first expression
               </button>
             </div>
@@ -461,15 +541,9 @@ export default function ExpressionsPage() {
           onClose={() => setEditTarget(null)}
         />
       )}
-      {infoTarget && (
-        <InfoModal expression={infoTarget} onClose={() => setInfoTarget(null)} />
-      )}
+      {infoTarget && <InfoModal expression={infoTarget} onClose={() => setInfoTarget(null)} />}
       {showAddSingle && (
-        <AddSingleModal
-          labels={labels}
-          onSave={handleAddSingle}
-          onClose={() => setShowAddSingle(false)}
-        />
+        <AddSingleModal labels={labels} onSave={handleAddSingle} onClose={() => setShowAddSingle(false)} />
       )}
       {showAddText && (
         <AddFromTextModal
@@ -510,10 +584,9 @@ function SidebarBtn({
       onClick={onClick}
       className={`w-8 h-8 rounded-md flex items-center justify-center text-base transition-colors ${
         active
-          ? 'bg-teal-50 dark:bg-teal-900/30 text-teal-600 dark:text-teal-400'
-          : 'text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-slate-700'
-      }`}
-    >
+          ? "bg-teal-50 dark:bg-teal-900/30 text-teal-600 dark:text-teal-400"
+          : "text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-slate-700"
+      }`}>
       {children}
     </button>
   );
@@ -537,17 +610,16 @@ function ManagePanel({
       <p className="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wide mb-2">Manage</p>
       <div className="space-y-1">
         {[
-          { label: '+ Add one', onClick: onAddSingle },
-          { label: '+ Add from list', onClick: onAddText },
-          { label: '+ Add from file', onClick: onAddFile },
-          { label: '✕ Delete mode', onClick: onDeleteMode },
-          { label: '↓ Download', onClick: onExport },
+          { label: "+ Add one", onClick: onAddSingle },
+          { label: "+ Add from list", onClick: onAddText },
+          { label: "+ Add from file", onClick: onAddFile },
+          { label: "✕ Delete mode", onClick: onDeleteMode },
+          { label: "↓ Download", onClick: onExport },
         ].map((item) => (
           <button
             key={item.label}
             onClick={item.onClick}
-            className="w-full text-left text-sm text-gray-700 dark:text-gray-300 hover:text-teal-600 dark:hover:text-teal-400 py-1 px-2 rounded hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors"
-          >
+            className="w-full text-left text-sm text-gray-700 dark:text-gray-300 hover:text-teal-600 dark:hover:text-teal-400 py-1 px-2 rounded hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors">
             {item.label}
           </button>
         ))}
@@ -586,8 +658,7 @@ function LabelsPanel({
         />
         <button
           type="submit"
-          className="text-xs bg-teal-600 hover:bg-teal-700 text-white px-2 py-1.5 rounded transition-colors"
-        >
+          className="text-xs bg-teal-600 hover:bg-teal-700 text-white px-2 py-1.5 rounded transition-colors">
           +
         </button>
       </form>
@@ -597,8 +668,7 @@ function LabelsPanel({
             <span className="text-sm text-gray-700 dark:text-gray-300 truncate">{l.name}</span>
             <button
               onClick={() => onDelete(l.id)}
-              className="text-gray-300 dark:text-slate-600 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-all text-xs ml-1"
-            >
+              className="text-gray-300 dark:text-slate-600 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-all text-xs ml-1">
               ✕
             </button>
           </div>
@@ -610,11 +680,11 @@ function LabelsPanel({
 
 function SettingsPanel() {
   const [darkMode, setDarkMode] = useState(() => {
-    return localStorage.getItem('phrasely_theme') === 'dark';
+    return localStorage.getItem("phrasely_theme") === "dark";
   });
   const [showCounter, setShowCounter] = useState(() => {
     try {
-      const s = localStorage.getItem('phrasely_options');
+      const s = localStorage.getItem("phrasely_options");
       if (s) return JSON.parse(s).showCountBtns !== false;
     } catch {}
     return true;
@@ -624,18 +694,18 @@ function SettingsPanel() {
     const next = !darkMode;
     setDarkMode(next);
     if (next) {
-      document.documentElement.classList.add('dark');
-      localStorage.setItem('phrasely_theme', 'dark');
+      document.documentElement.classList.add("dark");
+      localStorage.setItem("phrasely_theme", "dark");
     } else {
-      document.documentElement.classList.remove('dark');
-      localStorage.setItem('phrasely_theme', 'light');
+      document.documentElement.classList.remove("dark");
+      localStorage.setItem("phrasely_theme", "light");
     }
   };
 
   const toggleCounter = () => {
     const next = !showCounter;
     setShowCounter(next);
-    import('../utils/settings').then(({ setSettings }) => setSettings('showCountBtns', next));
+    import("../utils/settings").then(({ setSettings }) => setSettings("showCountBtns", next));
   };
 
   return (

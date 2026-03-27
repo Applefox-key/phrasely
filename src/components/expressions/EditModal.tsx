@@ -9,13 +9,19 @@ interface Props {
   onClose: () => void;
 }
 
-const STATUS_OPTIONS = ['new', 'active', 'paused', 'completed'] as const;
+function getAllowedStatuses(original: string): string[] {
+  if (original === 'active') return ['active', 'paused'];
+  if (original === 'paused') return ['paused', 'active'];
+  if (original === 'new') return ['new', 'active'];
+  return [original]; // 'completed' — no manual change
+}
 
 export default function EditModal({ expression, labels, onSave, onClose }: Props) {
   const [phrase, setPhrase] = useState(expression.phrase);
   const [exp, setExp] = useState(expression.expression);
   const [note, setNote] = useState(expression.note ?? '');
   const [status, setStatus] = useState(expression.status);
+  const allowedStatuses = getAllowedStatuses(expression.status);
   const [inQueue, setInQueue] = useState(expression.inQueue);
   const [labelid, setLabelid] = useState<number | null | undefined>(expression.labelid);
 
@@ -68,9 +74,10 @@ export default function EditModal({ expression, labels, onSave, onClose }: Props
               <select
                 value={status}
                 onChange={(e) => setStatus(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-200 dark:border-slate-600 rounded-md bg-white dark:bg-slate-700 text-gray-900 dark:text-gray-100 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
+                disabled={allowedStatuses.length === 1}
+                className="w-full px-3 py-2 border border-gray-200 dark:border-slate-600 rounded-md bg-white dark:bg-slate-700 text-gray-900 dark:text-gray-100 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 disabled:opacity-60 disabled:cursor-not-allowed"
               >
-                {STATUS_OPTIONS.map((s) => (
+                {allowedStatuses.map((s) => (
                   <option key={s} value={s}>{s}</option>
                 ))}
               </select>
@@ -90,12 +97,13 @@ export default function EditModal({ expression, labels, onSave, onClose }: Props
             </div>
           </div>
 
-          <label className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300 cursor-pointer">
+          <label className={`flex items-center gap-2 text-sm cursor-pointer ${status === 'active' ? 'text-gray-400 dark:text-gray-500' : 'text-gray-700 dark:text-gray-300'}`}>
             <input
               type="checkbox"
               checked={inQueue}
+              disabled={status === 'active'}
               onChange={(e) => setInQueue(e.target.checked)}
-              className="rounded border-gray-300"
+              className="rounded border-gray-300 disabled:cursor-not-allowed"
             />
             In queue (auto-activate)
           </label>

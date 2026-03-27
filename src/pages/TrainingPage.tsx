@@ -41,10 +41,12 @@ export default function TrainingPage() {
   const isLoading = isDemo ? loadingDemo : loadingReal;
 
   const [list, setList] = useState<Expression[]>([]);
+
   const [index, setIndex] = useState(0);
   const [flipped, setFlipped] = useState(false);
   const [labelFilter, setLabelFilter] = useState<number | null>(null);
   const [showCountBtns, setShowCountBtns] = useState(() => getSettings<boolean>("showCountBtns", true) ?? true);
+  const [showSettings, setShowSettings] = useState(false);
   const [readCount, setReadCount] = useState(0);
   const [celebrated, setCelebrated] = useState(false);
 
@@ -66,7 +68,8 @@ export default function TrainingPage() {
   useEffect(() => {
     if (!rawList) return;
     const filtered = labelFilter ? rawList.filter((e) => e.labelid === labelFilter) : rawList;
-    setList(filtered.map((e) => new Expression(e)));
+    const exprs = filtered.map((e) => new Expression(e));
+    setList(exprs);
     setIndex(0);
     setFlipped(false);
   }, [rawList, labelFilter]);
@@ -140,12 +143,7 @@ export default function TrainingPage() {
   return (
     <div className="flex flex-col min-h-[calc(100vh-3.5rem)]">
       {/* Header */}
-      <div className="bg-white dark:bg-slate-800 border-b border-gray-200 dark:border-slate-700 px-4 py-3 flex items-center gap-4 flex-wrap">
-        <div className="flex items-center gap-2">
-          <span className="text-sm font-medium text-gray-500 dark:text-gray-400">LEFT TO READ:</span>
-          <span className="font-bold text-teal-600 dark:text-teal-400 text-lg">{list.length}</span>
-        </div>
-
+      <div className="bg-white dark:bg-slate-800 border-b border-gray-200 dark:border-slate-700 px-4 py-3 flex items-center justify-between gap-4 flex-wrap">
         {labels && labels.length > 0 && (
           <select
             value={labelFilter ?? ""}
@@ -160,7 +158,47 @@ export default function TrainingPage() {
           </select>
         )}
 
-        <label className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 cursor-pointer ml-auto">
+        <div className="flex items-center gap-2">
+          <span className="text-sm font-medium text-gray-500 dark:text-gray-400">
+            <span className="sm:hidden">LEFT:</span>
+            <span className="hidden sm:inline">LEFT TO READ:</span>
+          </span>
+          <span className="font-bold text-teal-600 dark:text-teal-400 text-lg">{list.length}</span>
+        </div>
+
+        <div className="flex items-center gap-1">
+          <button
+            onClick={speak}
+            className="flex items-center gap-2 px-3 py-1.5 border border-gray-200 dark:border-slate-600 rounded-md text-sm text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors"
+            title="Speak">
+            🔊
+            <span className="hidden sm:inline">Speak</span>
+          </button>
+
+          <button
+            onClick={() => setShowSettings((v) => !v)}
+            className={`sm:hidden p-1.5 rounded-md transition-colors ${showSettings ? "bg-teal-50 dark:bg-teal-900/30 text-teal-600 dark:text-teal-400" : "text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300"}`}
+            title="Settings">
+            <svg
+              viewBox="0 0 24 24"
+              width="18"
+              height="18"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.75"
+              strokeLinecap="round"
+              strokeLinejoin="round">
+              <circle cx="12" cy="12" r="3" />
+              <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      {/* Settings panel — always visible on desktop, toggled on mobile */}
+      <div
+        className={`bg-gray-50 dark:bg-slate-800/80 border-b border-gray-200 dark:border-slate-700 px-4 py-2 flex-wrap justify-between items-center gap-4 ${showSettings ? "flex" : "hidden sm:flex"}`}>
+        <label className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 cursor-pointer">
           <input
             type="checkbox"
             checked={showCountBtns}
@@ -172,14 +210,26 @@ export default function TrainingPage() {
           />
           Counter
         </label>
+        {voices.length > 0 && (
+          <select
+            value={selectedVoice}
+            onChange={(e) => setSelectedVoice(e.target.value)}
+            className="text-sm max-w-[260px] border border-gray-200 dark:border-slate-600 rounded-md px-2 py-1 bg-white dark:bg-slate-700 text-gray-700 dark:text-gray-300 flex-1 min-w-0">
+            {voices.map((v) => (
+              <option key={v.name} value={v.name}>
+                {v.name}
+              </option>
+            ))}
+          </select>
+        )}
       </div>
 
       {/* Main content */}
-      <div className="flex-1 flex flex-col items-center justify-center px-4 py-8 gap-6">
+      <div className="flex-1 flex flex-col items-center justify-start px-4 py-3 sm:py-8 gap-3 sm:gap-6">
         {/* Card */}
         <div
           className="w-full max-w-2xl cursor-pointer"
-          style={{ perspective: "1000px", height: "300px" }}
+          style={{ perspective: "1000px", height: "clamp(180px, 40vh, 300px)" }}
           onClick={() => setFlipped((v) => !v)}>
           <div
             className="relative w-full h-full"
@@ -191,7 +241,7 @@ export default function TrainingPage() {
             }}>
             {/* Front */}
             <div
-              className="absolute inset-0 bg-white dark:bg-slate-800 rounded-lg border border-gray-200 dark:border-slate-700 shadow-sm p-8 flex flex-col justify-center"
+              className="absolute inset-0 bg-white dark:bg-slate-800 rounded-lg border border-gray-200 dark:border-slate-700 shadow-sm p-4 sm:p-8 flex flex-col justify-center"
               style={{ backfaceVisibility: "hidden", WebkitBackfaceVisibility: "hidden" }}>
               <p className="text-sm text-gray-400 dark:text-gray-500 mb-3 text-center">
                 {index + 1} / {list.length}
@@ -204,31 +254,67 @@ export default function TrainingPage() {
                     true,
                   )}
               </div>
-              {/* {current?.note && (
-                <p className="mt-3 text-center text-xs text-gray-400 dark:text-gray-500 italic">
-                  💡 hover the highlight for a hint
-                </p>
-              )} */}
-              {/* {current?.label && (
-                <span className="mt-4 self-center text-xs bg-teal-100 dark:bg-teal-900/40 text-teal-800 dark:text-teal-300 rounded-full px-3 py-0.5">
-                  {current.label}
-                </span>
-              )} */}
-              {/* <p className="text-xs text-gray-400 dark:text-gray-500 text-center mt-4">Click to flip</p> */}
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setFlipped(true);
+                }}
+                className="absolute bottom-3 right-3 text-gray-300 dark:text-slate-600 hover:text-gray-400 dark:hover:text-slate-500 transition-colors"
+                title="Show study plan">
+                <svg
+                  viewBox="0 0 24 24"
+                  width="18"
+                  height="18"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                  strokeLinecap="round">
+                  <path d="M1 4v6h6" />
+                  <path d="M23 20v-6h-6" />
+                  <path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4-4.64 4.36A9 9 0 0 1 3.51 15" />
+                </svg>
+              </button>
             </div>
 
             {/* Back */}
             <div
-              className="absolute inset-0 bg-white dark:bg-slate-800 rounded-lg border border-gray-200 dark:border-slate-700 shadow-sm p-8 flex flex-col justify-center overflow-y-auto"
+              className="absolute inset-0 bg-white dark:bg-slate-800 rounded-lg border border-gray-200 dark:border-slate-700 shadow-sm p-4 sm:p-8 flex flex-col justify-center overflow-y-auto"
               style={{
                 backfaceVisibility: "hidden",
                 WebkitBackfaceVisibility: "hidden",
                 transform: "rotateY(180deg)",
               }}>
-              <p className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-4 text-center uppercase tracking-wide">
+              <p className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-3 text-center uppercase tracking-wide">
                 Study Plan
               </p>
               <StudyPlanView plan={current?.studyPlan ?? []} />
+              {current?.label && (
+                <div className="mt-4 flex justify-center">
+                  <span className="text-xs bg-teal-100 dark:bg-teal-900/40 text-teal-800 dark:text-teal-300 rounded-full px-3 py-0.5">
+                    {current.label}
+                  </span>
+                </div>
+              )}
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setFlipped(false);
+                }}
+                className="absolute bottom-3 right-3 text-gray-300 dark:text-slate-600 hover:text-gray-400 dark:hover:text-slate-500 transition-colors"
+                title="Back to phrase">
+                <svg
+                  viewBox="0 0 24 24"
+                  width="18"
+                  height="18"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round">
+                  <path d="M19 12H5" />
+                  <path d="M12 19l-7-7 7-7" />
+                </svg>
+              </button>
             </div>
           </div>
         </div>
@@ -257,71 +343,53 @@ export default function TrainingPage() {
           </div>
         )}
 
-        {/* TTS */}
-        <div className="w-full max-w-2xl flex items-center gap-3">
-          <button
-            onClick={speak}
-            className="flex items-center gap-2 px-4 py-2 border border-gray-200 dark:border-slate-600 rounded-md text-sm text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors">
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M15.536 8.464a5 5 0 010 7.072M12 6v12m-3.536-9.536a5 5 0 000 7.072M5.343 5.343a9 9 0 0013.314 0M5.343 18.657a9 9 0 0113.314 0"
-              />
-            </svg>
-            Speak
-          </button>
-          {voices.length > 0 && (
-            <select
-              value={selectedVoice}
-              onChange={(e) => setSelectedVoice(e.target.value)}
-              className="text-sm border border-gray-200 dark:border-slate-600 rounded-md px-2 py-1.5 bg-white dark:bg-slate-700 text-gray-700 dark:text-gray-300 flex-1 min-w-0">
-              {voices.map((v) => (
-                <option key={v.name} value={v.name}>
-                  {v.name}
-                </option>
-              ))}
-            </select>
-          )}
-        </div>
-
         {/* Draggable read counter */}
         {showCountBtns && hintCount > 0 && (
           <CountBtns total={hintCount} count={readCount} setCount={setReadCount} onComplete={markAsRead} />
         )}
 
         {/* Navigation buttons */}
-        <div className="w-full max-w-2xl flex items-center justify-between gap-3">
-          <button
-            onClick={() => {
-              setIndex((v) => v - 1);
-              setFlipped(false);
-              setReadCount(0);
-            }}
-            disabled={index === 0}
-            className="px-6 py-2 border border-gray-200 dark:border-slate-600 rounded-md text-sm font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-slate-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors">
-            ← PREV
-          </button>
+        <div className="fixed bottom-0 left-0 right-0 z-30 sm:static sm:w-full sm:max-w-2xl bg-white dark:bg-slate-800 sm:bg-transparent border-t border-gray-200 dark:border-slate-700 sm:border-0 px-4 py-3 sm:p-0">
+          <div className="w-full max-w-2xl mx-auto sm:max-w-none flex items-center justify-between gap-3">
+            <button
+              onClick={() => {
+                setIndex((v) => v - 1);
+                setFlipped(false);
+                setReadCount(0);
+              }}
+              disabled={index === 0}
+              className="flex px-6 py-3 sm:py-2 border border-gray-200 dark:border-slate-600 rounded-md text-base sm:text-sm font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-slate-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors">
+              <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
+                <path d="M11 5L2 12l9 7v-4h11V9H11V5z"></path>
+              </svg>
+              <span className="hidden sm:inline"> PREV</span>
+            </button>
 
-          <button
-            onClick={markAsRead}
-            disabled={updateMutation.isPending}
-            className="flex-1 bg-teal-600 hover:bg-teal-700 disabled:opacity-60 text-white font-medium py-2 px-6 rounded-md transition-colors">
-            HAS BEEN READ ✓
-          </button>
+            <button
+              onClick={markAsRead}
+              disabled={updateMutation.isPending}
+              className="flex-1 bg-teal-600 hover:bg-teal-700 disabled:opacity-60 text-white font-semibold py-2 px-0 text-base sm:text-sm rounded-md transition-colors">
+              DONE ✓
+            </button>
 
-          <button
-            onClick={() => {
-              setIndex((v) => v + 1);
-              setFlipped(false);
-              setReadCount(0);
-            }}
-            disabled={index >= list.length - 1}
-            className="px-6 py-2 border border-gray-200 dark:border-slate-600 rounded-md text-sm font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-slate-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors">
-            NEXT →
-          </button>
+            <button
+              onClick={() => {
+                setIndex((v) => v + 1);
+                setFlipped(false);
+                setReadCount(0);
+              }}
+              disabled={index >= list.length - 1}
+              className="flex px-6 py-3 sm:py-2 border border-gray-200 dark:border-slate-600 rounded-md text-base sm:text-sm font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-slate-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors">
+              <span className="hidden sm:inline">NEXT </span>{" "}
+              <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" className="scale-x-[-1]">
+                <path d="M11 5L2 12l9 7v-4h11V9H11V5z"></path>
+              </svg>
+            </button>
+          </div>
         </div>
+
+        {/* Spacer so fixed nav doesn't cover content on mobile */}
+        <div className="h-20 sm:hidden shrink-0" />
       </div>
 
       {/* Celebration overlay */}
@@ -332,7 +400,7 @@ export default function TrainingPage() {
 
 function StudyPlanView({ plan }: { plan: string[] }) {
   return (
-    <div className="space-y-1.5">
+    <div className="flex sm:gap-1 overflow-x-auto pb-1 justify-center">
       {plan.map((row, i) => {
         const isDone = row.includes("✔");
         const isMissed = row.includes("☹");
@@ -340,25 +408,31 @@ function StudyPlanView({ plan }: { plan: string[] }) {
         // Parse row: "🟢: Day 1:Mon Jan 01 2024 ✔:Today"
         const parts = row.split(":");
         const icon = parts[0]?.trim();
-        const dayPart = parts[1]?.trim();
-        const datePart = parts.slice(2, 5).join(":").replace("Today", "").trim();
+        const dayLabel = parts[1]?.trim() ?? "";
+        const dateStr = (parts[2] ?? "").replace(/[✔☹]/g, "").trim();
+        // dateStr is like "Mon Jan 01 2024"
+        const dp = dateStr.split(" ");
+        const weekday = dp[0] ?? "";
+        const month = dp[1] ?? "";
+        const day = dp[2] ? String(parseInt(dp[2], 10)) : "";
 
         return (
           <div
             key={i}
-            className={`flex items-center gap-3 px-3 py-1.5 rounded-md text-sm ${
+            className={`flex flex-col items-center gap-0.5 pr-2 sm:px-2 py-2 rounded-lg text-center text-xs transition-colors ${
               isToday
-                ? "bg-teal-50 dark:bg-teal-900/30 font-semibold text-teal-700 dark:text-teal-400"
+                ? "bg-teal-50 dark:bg-teal-900/30 text-teal-700 dark:text-teal-400 font-semibold"
                 : isDone
                   ? "text-teal-600 dark:text-teal-500"
                   : isMissed
                     ? "text-red-500 dark:text-red-400"
-                    : "text-gray-500 dark:text-gray-400"
+                    : "text-gray-400 dark:text-gray-500"
             }`}>
-            <span>{icon}</span>
-            <span className="flex-1">{dayPart}</span>
-            <span className="text-xs">{datePart}</span>
-            {isToday && <span className="text-xs font-bold">TODAY</span>}
+            <span className="text-sm leading-none">{icon}</span>
+            <span className="whitespace-normal sm:whitespace-nowrap">{dayLabel}</span>
+            <span>{weekday}</span>
+            <span>{month}</span>
+            <span>{day}</span>
           </div>
         );
       })}

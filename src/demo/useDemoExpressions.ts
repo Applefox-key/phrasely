@@ -30,10 +30,21 @@ export function useDemoExpressions(filters?: ExpressionFilters) {
 
 /** Returns expressions due for training today */
 export function useDemoUnread() {
-  const getUnread = useDemoStore((s) => s.getUnread);
-  // Subscribe to expressions so the hook re-runs when data changes
-  useDemoStore((s) => s.expressions);
-  return { data: getUnread(), isLoading: false };
+  const expressions = useDemoStore((s) => s.expressions);
+  const data = useMemo(() => {
+    const tzOffsetMs = new Date().getTimezoneOffset() * 60 * 1000;
+    const todayEnd = new Date();
+    todayEnd.setHours(23, 59, 59, 999);
+    const cutoff = todayEnd.getTime() + tzOffsetMs;
+    return expressions.filter(
+      (e) =>
+        e.status === 'active' &&
+        (e.stage ?? 0) < 9 &&
+        !e.inQueue &&
+        new Date(e.nextDate).getTime() <= cutoff
+    );
+  }, [expressions]);
+  return { data, isLoading: false };
 }
 
 /** Returns demo labels */

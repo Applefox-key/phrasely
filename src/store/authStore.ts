@@ -57,9 +57,9 @@ export const useAuthStore = create<AuthState>()(
     {
       name: 'phrasely_auth',
       partialize: (state) => ({
-        isAuthenticated: state.isAuthenticated,
-        user: state.user,
-        // isDemo and isInitializing are intentionally NOT persisted
+        // Never persist demo mode auth — demo user must re-enter on refresh
+        isAuthenticated: state.isDemo ? false : state.isAuthenticated,
+        user: state.isDemo ? null : state.user,
       }),
     }
   )

@@ -1,14 +1,14 @@
-import { Link, useLocation } from 'react-router-dom';
-import { useAuthStore } from '../store/authStore';
-import AppSwitcher from './AppSwitcher';
-import DarkModeToggle from './DarkModeToggle';
+import { Link, useLocation } from "react-router-dom";
+import { useAuthStore } from "../store/authStore";
+import AppSwitcher from "./AppSwitcher";
+import DarkModeToggle from "./DarkModeToggle";
 
 export default function Navbar() {
   const { isAuthenticated, user, logout } = useAuthStore();
   const location = useLocation();
 
   const isActive = (path: string) => location.pathname === path;
-  const isTraining = location.pathname === '/training';
+  const isTraining = location.pathname === "/training";
 
   if (isTraining) {
     return (
@@ -16,8 +16,16 @@ export default function Navbar() {
         <div className="px-4 h-14 flex items-center">
           <Link
             to="/expressions"
-            className="flex items-center gap-1.5 text-sm text-gray-500 dark:text-gray-400 hover:text-teal-600 dark:hover:text-teal-400 transition-colors">
-            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            className="flex items-center gap-1.5 text-sm text-gray-500 dark:text-gray-400 hover:text-teal-600 hover:dark:text-teal-400 transition-colors">
+            <svg
+              viewBox="0 0 24 24"
+              width="16"
+              height="16"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round">
               <path d="M19 12H5" />
               <path d="M12 19l-7-7 7-7" />
             </svg>
@@ -42,12 +50,20 @@ export default function Navbar() {
           <div className="hidden sm:flex items-center gap-1">
             {isAuthenticated && (
               <>
-                <NavLink to="/training" active={isActive('/training')}>Training</NavLink>
-                <NavLink to="/expressions" active={isActive('/expressions')}>Expressions</NavLink>
-                <NavLink to="/profile" active={isActive('/profile')}>Profile</NavLink>
+                <NavLink to="/training" active={isActive("/training")}>
+                  Training
+                </NavLink>
+                <NavLink to="/expressions" active={isActive("/expressions")}>
+                  Expressions
+                </NavLink>
+                <NavLink to="/profile" active={isActive("/profile")}>
+                  Profile
+                </NavLink>
               </>
             )}
-            <NavLink to="/about" active={isActive('/about')}>About</NavLink>
+            <NavLink to="/about" active={isActive("/about")}>
+              About
+            </NavLink>
           </div>
 
           {/* Right actions */}
@@ -65,26 +81,26 @@ export default function Navbar() {
                     />
                   ) : (
                     <div className="w-8 h-8 rounded-full bg-teal-100 dark:bg-teal-800 text-teal-700 dark:text-teal-300 flex items-center justify-center text-sm font-medium hover:ring-2 hover:ring-teal-400 transition-all cursor-pointer">
-                      {user?.name?.[0]?.toUpperCase() ?? 'U'}
+                      {user?.name?.[0]?.toUpperCase() ?? "U"}
                     </div>
                   )}
                 </Link>
                 <button
                   onClick={() => logout()}
-                  className="text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hidden sm:block"
-                >
+                  className="text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 hover:dark:text-gray-200 hidden sm:block">
                   Logout
                 </button>
               </div>
             ) : (
               <div className="flex items-center gap-2">
-                <Link to="/login" className="text-sm text-gray-600 dark:text-gray-300 hover:text-teal-600 dark:hover:text-teal-400">
+                <Link
+                  to="/login"
+                  className="text-sm text-gray-600 dark:text-gray-300 hover:text-teal-600 hover:dark:text-teal-400">
                   Login
                 </Link>
                 <Link
                   to="/register"
-                  className="text-sm bg-teal-600 hover:bg-teal-700 text-white px-3 py-1.5 rounded-md transition-colors"
-                >
+                  className="text-sm bg-teal-600 hover:bg-teal-700 text-white px-3 py-1.5 rounded-md transition-colors">
                   Register
                 </Link>
               </div>
@@ -96,15 +112,28 @@ export default function Navbar() {
         <div className="sm:hidden flex items-center gap-1 pb-2 overflow-x-auto">
           {isAuthenticated ? (
             <>
-              <NavLink to="/training" active={isActive('/training')}>Training</NavLink>
-              <NavLink to="/expressions" active={isActive('/expressions')}>Expressions</NavLink>
-              <NavLink to="/about" active={isActive('/about')}>About</NavLink>
+              <NavLink to="/training" active={isActive("/training")}>
+                Training
+              </NavLink>
+              <NavLink to="/expressions" active={isActive("/expressions")}>
+                Expressions
+              </NavLink>
+              <NavLink to="/about" active={isActive("/about")}>
+                About
+              </NavLink>
               <button
                 onClick={() => logout()}
                 title="Sign out"
-                className="ml-auto p-1.5 rounded-md text-gray-400 dark:text-gray-500 hover:text-red-500 dark:hover:text-red-400 hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors shrink-0"
-              >
-                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
+                className="ml-auto p-1.5 rounded-md text-gray-400 dark:text-gray-500 hover:text-red-500 hover:dark:text-red-400 hover:bg-gray-50 hover:dark:bg-slate-700 transition-colors shrink-0">
+                <svg
+                  viewBox="0 0 24 24"
+                  width="18"
+                  height="18"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.75"
+                  strokeLinecap="round"
+                  strokeLinejoin="round">
                   <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
                   <polyline points="16 17 21 12 16 7" />
                   <line x1="21" y1="12" x2="9" y2="12" />
@@ -112,7 +141,9 @@ export default function Navbar() {
               </button>
             </>
           ) : (
-            <NavLink to="/about" active={isActive('/about')}>About</NavLink>
+            <NavLink to="/about" active={isActive("/about")}>
+              About
+            </NavLink>
           )}
         </div>
       </div>
@@ -126,10 +157,9 @@ function NavLink({ to, active, children }: { to: string; active: boolean; childr
       to={to}
       className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
         active
-          ? 'bg-teal-50 dark:bg-teal-900/30 text-teal-600 dark:text-teal-400'
-          : 'text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-50 dark:hover:bg-slate-700'
-      }`}
-    >
+          ? "bg-teal-50 dark:bg-teal-900/30 text-teal-600 dark:text-teal-400"
+          : "text-gray-600 dark:text-gray-300 hover:text-gray-900 hover:dark:text-gray-100 hover:bg-gray-50 hover:dark:bg-slate-700"
+      }`}>
       {children}
     </Link>
   );

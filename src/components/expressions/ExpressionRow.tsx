@@ -44,7 +44,7 @@ export default function ExpressionRow({
 
   return (
     <div
-      className={`border-l border-l-teal-500 flex items-center gap-3 px-3 py-2.5 border-b border-gray-100 dark:border-slate-700 hover:bg-gray-50 dark:border-l-teal-500 dark:hover:bg-slate-750 transition-colors group ${
+      className={`border-l border-l-teal-500 flex items-center gap-3 px-3 py-2.5 border-b border-gray-100 dark:border-slate-700 hover:bg-gray-300 dark:border-l-teal-500  text-gray-200 transition-colors hover:dark:bg-slate-700 group ${
         selected ? "bg-teal-50 dark:bg-teal-900/20" : ""
       }`}>
       {/* Checkbox (select mode) */}
@@ -130,7 +130,7 @@ export default function ExpressionRow({
           e.stopPropagation();
           onDelete();
         }}
-        className="text-gray-300 dark:text-slate-600 hover:text-red-500 dark:hover:text-red-400 transition-colors opacity-0 group-hover:opacity-100 shrink-0"
+        className="text-gray-300 dark:text-slate-600 hover:text-red-500 hover:dark:text-red-400 transition-colors opacity-0 group-hover:opacity-100 shrink-0"
         title="Delete">
         ✕
       </button>

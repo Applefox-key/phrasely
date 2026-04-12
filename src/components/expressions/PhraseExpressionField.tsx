@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useRef, useState } from "react";
 
 interface Props {
   phrase: string;
@@ -43,7 +43,7 @@ export default function PhraseExpressionField({
   };
 
   const clearExpression = () => {
-    onExpressionChange('');
+    onExpressionChange("");
     setShowSetBtn(false);
   };
 
@@ -78,11 +78,12 @@ export default function PhraseExpressionField({
           <span className="ml-1 font-normal text-gray-400">(select in phrase above)</span>
         </label>
 
-        <div className={`relative flex items-center min-h-[2.25rem] px-3 py-2 rounded-md border text-sm transition-colors ${
-          expression
-            ? 'border-teal-300 dark:border-teal-700 bg-teal-50 dark:bg-teal-900/20'
-            : 'border-gray-200 dark:border-slate-600 bg-gray-50 dark:bg-slate-700/50'
-        }`}>
+        <div
+          className={`relative flex items-center min-h-[2.25rem] px-3 py-2 rounded-md border text-sm transition-colors ${
+            expression
+              ? "border-teal-300 dark:border-teal-700 bg-teal-50 dark:bg-teal-900/20"
+              : "border-gray-200 dark:border-slate-600 bg-gray-50 dark:bg-slate-700/50"
+          }`}>
           {/* "Set as expression" button — floats above, appears on selection */}
           {showSetBtn && (
             <button
@@ -92,8 +93,7 @@ export default function PhraseExpressionField({
                 e.preventDefault();
               }}
               onClick={applySelection}
-              className="absolute -top-9 left-0 flex items-center gap-1.5 px-3 py-1.5 bg-teal-600 hover:bg-teal-700 text-white text-xs font-medium rounded-md shadow-md transition-colors whitespace-nowrap z-10"
-            >
+              className="absolute -top-9 left-0 flex items-center gap-1.5 px-3 py-1.5 bg-teal-600 hover:bg-teal-700 text-white text-xs font-medium rounded-md shadow-md transition-colors whitespace-nowrap z-10">
               Set selection as expression
               <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
@@ -109,9 +109,8 @@ export default function PhraseExpressionField({
               <button
                 type="button"
                 onClick={clearExpression}
-                className="ml-2 shrink-0 text-gray-400 hover:text-red-500 dark:hover:text-red-400 transition-colors"
-                title="Clear expression"
-              >
+                className="ml-2 shrink-0 text-gray-400 hover:text-red-500 hover:dark:text-red-400 transition-colors"
+                title="Clear expression">
                 <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                 </svg>

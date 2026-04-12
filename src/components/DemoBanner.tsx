@@ -1,5 +1,5 @@
-import { useNavigate } from 'react-router-dom';
-import { useAuthStore } from '../store/authStore';
+import { useNavigate } from "react-router-dom";
+import { useAuthStore } from "../store/authStore";
 
 export default function DemoBanner() {
   const isDemo = useAuthStore((s) => s.isDemo);
@@ -18,15 +18,13 @@ export default function DemoBanner() {
       <span>👋 Demo mode — changes are not saved and will be lost on refresh.</span>
       <div className="flex gap-3 shrink-0">
         <button
-          onClick={() => exitDemo('/login')}
-          className="font-medium underline hover:text-amber-900 dark:hover:text-amber-200"
-        >
+          onClick={() => exitDemo("/login")}
+          className="font-medium underline hover:text-amber-900 hover:dark:text-amber-200">
           Sign in
         </button>
         <button
-          onClick={() => exitDemo('/register')}
-          className="font-medium underline hover:text-amber-900 dark:hover:text-amber-200"
-        >
+          onClick={() => exitDemo("/register")}
+          className="font-medium underline hover:text-amber-900 hover:dark:text-amber-200">
           Register
         </button>
       </div>

@@ -401,7 +401,7 @@ export default function ExpressionsPage() {
               className={`text-xs px-2.5 py-1.5 rounded-md border transition-colors shrink-0 ${
                 selectMode
                   ? "bg-teal-50 dark:bg-teal-900/30 border-teal-300 dark:border-teal-700 text-teal-700 dark:text-teal-400"
-                  : "border-gray-200 dark:border-slate-600 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-slate-700"
+                  : "border-gray-200 dark:border-slate-600 text-gray-600 dark:text-gray-300 hover:bg-gray-50 hover:dark:bg-slate-700"
               }`}>
               Select
             </button>
@@ -411,7 +411,7 @@ export default function ExpressionsPage() {
               className={`text-xs px-2.5 py-1.5 rounded-md border transition-colors shrink-0 ${
                 groupByLabel
                   ? "bg-teal-50 dark:bg-teal-900/30 border-teal-300 dark:border-teal-700 text-teal-700 dark:text-teal-400"
-                  : "border-gray-200 dark:border-slate-600 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-slate-700"
+                  : "border-gray-200 dark:border-slate-600 text-gray-600 dark:text-gray-300 hover:bg-gray-50 hover:dark:bg-slate-700"
               }`}>
               {groupByLabel ? "Flat" : "Group"}
             </button>
@@ -431,7 +431,7 @@ export default function ExpressionsPage() {
               className={`shrink-0 p-1.5 rounded-md border transition-colors ${
                 filtersOpen || filterLabel || filterStatus || filterStage || filterInQueue
                   ? "border-teal-300 dark:border-teal-700 text-teal-600 dark:text-teal-400 bg-teal-50 dark:bg-teal-900/30"
-                  : "border-gray-200 dark:border-slate-600 text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-slate-700"
+                  : "border-gray-200 dark:border-slate-600 text-gray-500 dark:text-gray-400 hover:bg-gray-50 hover:dark:bg-slate-700"
               }`}
               title="Filters">
               <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
@@ -551,7 +551,7 @@ export default function ExpressionsPage() {
                 setSelectMode(false);
                 setSelected(new Set());
               }}
-              className="text-xs text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200">
+              className="text-xs text-gray-500 dark:text-gray-400 hover:text-gray-700 hover:dark:text-gray-200">
               Cancel
             </button>
             <button
@@ -652,7 +652,7 @@ function SidebarBtn({
       className={`w-8 h-8 rounded-md flex items-center justify-center text-base transition-colors ${
         active
           ? "bg-teal-50 dark:bg-teal-900/30 text-teal-600 dark:text-teal-400"
-          : "text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-slate-700"
+          : "text-gray-500 dark:text-gray-400 hover:bg-gray-100 hover:dark:bg-slate-700"
       }`}>
       {children}
     </button>
@@ -686,7 +686,7 @@ function ManagePanel({
           <button
             key={item.label}
             onClick={item.onClick}
-            className="w-full text-left text-sm text-gray-700 dark:text-gray-300 hover:text-teal-600 dark:hover:text-teal-400 py-1 px-2 rounded hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors">
+            className="w-full text-left text-sm text-gray-700 dark:text-gray-300 hover:text-teal-600 hover:dark:text-teal-400 py-1 px-2 rounded hover:bg-gray-50 hover:dark:bg-slate-700 transition-colors">
             {item.label}
           </button>
         ))}

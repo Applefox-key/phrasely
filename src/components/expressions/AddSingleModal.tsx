@@ -1,6 +1,6 @@
-import { useState, FormEvent } from 'react';
-import type { Label } from '../../types';
-import PhraseExpressionField from './PhraseExpressionField';
+import { useState, FormEvent } from "react";
+import type { Label } from "../../types";
+import PhraseExpressionField from "./PhraseExpressionField";
 
 interface Props {
   labels: Label[];
@@ -9,9 +9,9 @@ interface Props {
 }
 
 export default function AddSingleModal({ labels, onSave, onClose }: Props) {
-  const [phrase, setPhrase] = useState('');
-  const [expression, setExpression] = useState('');
-  const [note, setNote] = useState('');
+  const [phrase, setPhrase] = useState("");
+  const [expression, setExpression] = useState("");
+  const [note, setNote] = useState("");
   const [labelid, setLabelid] = useState<number | null>(null);
 
   const handleSubmit = (e: FormEvent) => {
@@ -30,11 +30,14 @@ export default function AddSingleModal({ labels, onSave, onClose }: Props) {
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onClick={onClose}>
       <div
         className="bg-white dark:bg-slate-800 rounded-lg shadow-xl w-full max-w-md"
-        onClick={(e) => e.stopPropagation()}
-      >
+        onClick={(e) => e.stopPropagation()}>
         <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-slate-700">
           <h2 className="font-semibold text-gray-900 dark:text-gray-100">Add expression</h2>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 text-xl leading-none">×</button>
+          <button
+            onClick={onClose}
+            className="text-gray-400 hover:text-gray-600 hover:dark:text-gray-200 text-xl leading-none">
+            ×
+          </button>
         </div>
 
         <form onSubmit={handleSubmit} className="p-4 space-y-4">
@@ -62,13 +65,14 @@ export default function AddSingleModal({ labels, onSave, onClose }: Props) {
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Label</label>
             <select
-              value={labelid ?? ''}
+              value={labelid ?? ""}
               onChange={(e) => setLabelid(e.target.value ? Number(e.target.value) : null)}
-              className="w-full px-3 py-2 border border-gray-200 dark:border-slate-600 rounded-md bg-white dark:bg-slate-700 text-gray-900 dark:text-gray-100 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
-            >
+              className="w-full px-3 py-2 border border-gray-200 dark:border-slate-600 rounded-md bg-white dark:bg-slate-700 text-gray-900 dark:text-gray-100 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500">
               <option value="">No label</option>
               {labels.map((l) => (
-                <option key={l.id} value={l.id}>{l.name}</option>
+                <option key={l.id} value={l.id}>
+                  {l.name}
+                </option>
               ))}
             </select>
           </div>
@@ -76,15 +80,13 @@ export default function AddSingleModal({ labels, onSave, onClose }: Props) {
           <div className="flex gap-3 pt-1">
             <button
               type="submit"
-              className="flex-1 bg-teal-600 hover:bg-teal-700 text-white font-medium py-2 px-4 rounded-md transition-colors"
-            >
+              className="flex-1 bg-teal-600 hover:bg-teal-700 text-white font-medium py-2 px-4 rounded-md transition-colors">
               Add
             </button>
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 border border-gray-200 dark:border-slate-600 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-slate-700 font-medium py-2 px-4 rounded-md transition-colors"
-            >
+              className="flex-1 border border-gray-200 dark:border-slate-600 text-gray-600 dark:text-gray-300 hover:bg-gray-50 hover:dark:bg-slate-700 font-medium py-2 px-4 rounded-md transition-colors">
               Cancel
             </button>
           </div>

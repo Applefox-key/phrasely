@@ -169,7 +169,7 @@ export default function TrainingPage() {
         <div className="flex items-center gap-1">
           <button
             onClick={speak}
-            className="flex items-center gap-2 px-3 py-1.5 border border-gray-200 dark:border-slate-600 rounded-md text-sm text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors"
+            className="flex items-center gap-2 px-3 py-1.5 border border-gray-200 dark:border-slate-600 rounded-md text-sm text-gray-600 dark:text-gray-300 hover:bg-gray-50 hover:dark:bg-slate-700 transition-colors"
             title="Speak">
             🔊
             <span className="hidden sm:inline">Speak</span>
@@ -177,7 +177,7 @@ export default function TrainingPage() {
 
           <button
             onClick={() => setShowSettings((v) => !v)}
-            className={`sm:hidden p-1.5 rounded-md transition-colors ${showSettings ? "bg-teal-50 dark:bg-teal-900/30 text-teal-600 dark:text-teal-400" : "text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300"}`}
+            className={`sm:hidden p-1.5 rounded-md transition-colors ${showSettings ? "bg-teal-50 dark:bg-teal-900/30 text-teal-600 dark:text-teal-400" : "text-gray-400 dark:text-gray-500 hover:text-gray-600 hover:dark:text-gray-300"}`}
             title="Settings">
             <svg
               viewBox="0 0 24 24"
@@ -259,7 +259,7 @@ export default function TrainingPage() {
                   e.stopPropagation();
                   setFlipped(true);
                 }}
-                className="absolute bottom-3 right-3 text-gray-300 dark:text-slate-600 hover:text-gray-400 dark:hover:text-slate-500 transition-colors"
+                className="absolute bottom-3 right-3 text-gray-300 dark:text-slate-600 hover:text-gray-400 hover:dark:text-slate-500 transition-colors"
                 title="Show study plan">
                 <svg
                   viewBox="0 0 24 24"
@@ -300,7 +300,7 @@ export default function TrainingPage() {
                   e.stopPropagation();
                   setFlipped(false);
                 }}
-                className="absolute bottom-3 right-3 text-gray-300 dark:text-slate-600 hover:text-gray-400 dark:hover:text-slate-500 transition-colors"
+                className="absolute bottom-3 right-3 text-gray-300 dark:text-slate-600 hover:text-gray-400 hover:dark:text-slate-500 transition-colors"
                 title="Back to phrase">
                 <svg
                   viewBox="0 0 24 24"
@@ -358,7 +358,7 @@ export default function TrainingPage() {
                 setReadCount(0);
               }}
               disabled={index === 0}
-              className="flex px-6 py-3 sm:py-2 border border-gray-200 dark:border-slate-600 rounded-md text-base sm:text-sm font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-slate-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors">
+              className="flex px-6 py-3 sm:py-2 border border-gray-200 dark:border-slate-600 rounded-md text-base sm:text-sm font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-50 hover:dark:bg-slate-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors">
               <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
                 <path d="M11 5L2 12l9 7v-4h11V9H11V5z"></path>
               </svg>
@@ -379,7 +379,7 @@ export default function TrainingPage() {
                 setReadCount(0);
               }}
               disabled={index >= list.length - 1}
-              className="flex px-6 py-3 sm:py-2 border border-gray-200 dark:border-slate-600 rounded-md text-base sm:text-sm font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-slate-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors">
+              className="flex px-6 py-3 sm:py-2 border border-gray-200 dark:border-slate-600 rounded-md text-base sm:text-sm font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-50 hover:dark:bg-slate-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors">
               <span className="hidden sm:inline">NEXT </span>{" "}
               <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" className="scale-x-[-1]">
                 <path d="M11 5L2 12l9 7v-4h11V9H11V5z"></path>
@@ -387,7 +387,6 @@ export default function TrainingPage() {
             </button>
           </div>
         </div>
-
       </div>
 
       {/* Celebration overlay */}

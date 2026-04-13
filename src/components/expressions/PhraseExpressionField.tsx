@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useRef, useState, type ReactNode } from "react";
 
 interface Props {
   phrase: string;
@@ -7,6 +7,8 @@ interface Props {
   onExpressionChange: (v: string) => void;
   phraseRows?: number;
   autoFocus?: boolean;
+  /** Optional element rendered in the Phrase label row (e.g. VoiceInputButton). */
+  phraseAction?: ReactNode;
 }
 
 /**
@@ -21,6 +23,7 @@ export default function PhraseExpressionField({
   onExpressionChange,
   phraseRows = 3,
   autoFocus = false,
+  phraseAction,
 }: Props) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const [showSetBtn, setShowSetBtn] = useState(false);
@@ -51,10 +54,13 @@ export default function PhraseExpressionField({
     <div className="space-y-2">
       {/* Phrase textarea */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-          Phrase
-          <span className="ml-1 font-normal text-gray-400">(full sentence)</span>
-        </label>
+        <div className="flex items-center justify-between mb-1">
+          <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+            Phrase
+            <span className="ml-1 font-normal text-gray-400">(full sentence)</span>
+          </label>
+          {phraseAction}
+        </div>
         <textarea
           ref={textareaRef}
           value={phrase}

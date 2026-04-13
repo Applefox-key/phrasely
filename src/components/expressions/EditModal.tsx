@@ -2,6 +2,7 @@ import { useState, FormEvent } from "react";
 import { Expression } from "../../classes/Expression";
 import type { ExpressionData, Label } from "../../types";
 import PhraseExpressionField from "./PhraseExpressionField";
+import { VoiceInputButton } from "../VoiceInputButton";
 interface Props {
   expression: Expression;
   labels: Label[];
@@ -59,9 +60,13 @@ export default function EditModal({ expression, labels, onSave, onClose }: Props
             expression={exp}
             onPhraseChange={setPhrase}
             onExpressionChange={setExp}
+            phraseAction={<VoiceInputButton onResult={setPhrase} />}
           />
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Note (tooltip)</label>
+            <div className="flex items-center justify-between mb-1">
+              <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Note (tooltip)</label>
+              <VoiceInputButton onResult={setNote} />
+            </div>
             <input
               type="text"
               value={note}

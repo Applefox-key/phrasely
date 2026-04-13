@@ -1,6 +1,7 @@
 import { useState, FormEvent } from "react";
 import type { Label } from "../../types";
 import PhraseExpressionField from "./PhraseExpressionField";
+import { VoiceInputButton } from "../VoiceInputButton";
 
 interface Props {
   labels: Label[];
@@ -47,12 +48,16 @@ export default function AddSingleModal({ labels, onSave, onClose }: Props) {
             onPhraseChange={setPhrase}
             onExpressionChange={setExpression}
             autoFocus
+            phraseAction={<VoiceInputButton onResult={setPhrase} />}
           />
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              Note <span className="text-gray-400 font-normal">(optional tooltip/translation)</span>
-            </label>
+            <div className="flex items-center justify-between mb-1">
+              <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                Note <span className="text-gray-400 font-normal">(optional tooltip/translation)</span>
+              </label>
+              <VoiceInputButton onResult={setNote} />
+            </div>
             <input
               type="text"
               value={note}

@@ -10,6 +10,7 @@ import { getSettings } from "../utils/settings";
 import { useAuthStore } from "../store/authStore";
 import { useDemoStore } from "../demo/demoStore";
 import { useDemoUnread, useDemoLabels } from "../demo/useDemoExpressions";
+import { SpeakButton } from "../components/SpeakButton";
 
 export default function TrainingPage() {
   const navigate = useNavigate();
@@ -50,21 +51,6 @@ export default function TrainingPage() {
   const [readCount, setReadCount] = useState(0);
   const [celebrated, setCelebrated] = useState(false);
 
-  // TTS
-  const [voices, setVoices] = useState<SpeechSynthesisVoice[]>([]);
-  const [selectedVoice, setSelectedVoice] = useState("Google US English");
-  const synthRef = useRef(window.speechSynthesis);
-
-  useEffect(() => {
-    const loadVoices = () => {
-      const v = synthRef.current.getVoices();
-      setVoices(v);
-      if (!selectedVoice && v.length) setSelectedVoice(v[0].name);
-    };
-    loadVoices();
-    synthRef.current.onvoiceschanged = loadVoices;
-  }, [selectedVoice]);
-
   useEffect(() => {
     if (!rawList) return;
     const filtered = labelFilter ? rawList.filter((e) => e.labelid === labelFilter) : rawList;
@@ -100,15 +86,6 @@ export default function TrainingPage() {
     setFlipped(false);
     setReadCount(0);
   }, [current, index, list.length, isDemo, demoStore, updateMutation]);
-
-  const speak = () => {
-    if (!current) return;
-    const utterance = new SpeechSynthesisUtterance(current.phrase);
-    const voice = voices.find((v) => v.name === selectedVoice);
-    if (voice) utterance.voice = voice;
-    synthRef.current.cancel();
-    synthRef.current.speak(utterance);
-  };
 
   // hint read count from expression
   const hintCount = current?.hintForReading[2] ?? 0;
@@ -167,13 +144,7 @@ export default function TrainingPage() {
         </div>
 
         <div className="flex items-center gap-1">
-          <button
-            onClick={speak}
-            className="flex items-center gap-2 px-3 py-1.5 border border-gray-200 dark:border-slate-600 rounded-md text-sm text-gray-600 dark:text-gray-300 hover:bg-gray-50 hover:dark:bg-slate-700 transition-colors"
-            title="Speak">
-            🔊
-            <span className="hidden sm:inline">Speak</span>
-          </button>
+          <SpeakButton text={current?.phrase ?? ""} />
 
           <button
             onClick={() => setShowSettings((v) => !v)}
@@ -210,18 +181,6 @@ export default function TrainingPage() {
           />
           Counter
         </label>
-        {voices.length > 0 && (
-          <select
-            value={selectedVoice}
-            onChange={(e) => setSelectedVoice(e.target.value)}
-            className="text-sm max-w-[260px] border border-gray-200 dark:border-slate-600 rounded-md px-2 py-1 bg-white dark:bg-slate-700 text-gray-700 dark:text-gray-300 flex-1 min-w-0">
-            {voices.map((v) => (
-              <option key={v.name} value={v.name}>
-                {v.name}
-              </option>
-            ))}
-          </select>
-        )}
       </div>
 
       {/* Main content */}

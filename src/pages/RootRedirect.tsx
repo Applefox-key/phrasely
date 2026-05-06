@@ -4,10 +4,11 @@ import { useAuthStore } from '../store/authStore';
 import { expressionsApi } from '../api/expressions';
 
 export default function RootRedirect() {
-  const { isAuthenticated } = useAuthStore();
+  const { isAuthenticated, isInitializing } = useAuthStore();
   const [target, setTarget] = useState<string | null>(null);
 
   useEffect(() => {
+    if (isInitializing) return;
     if (!isAuthenticated) {
       setTarget('/login');
       return;
@@ -19,7 +20,7 @@ export default function RootRedirect() {
         setTarget(data && data.length > 0 ? '/training' : '/expressions');
       })
       .catch(() => setTarget('/expressions'));
-  }, [isAuthenticated]);
+  }, [isAuthenticated, isInitializing]);
 
   if (!target) return null;
   return <Navigate to={target} replace />;

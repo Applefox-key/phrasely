@@ -1,54 +1,52 @@
-import { useState, FormEvent, useRef } from 'react';
-import { useAuthStore } from '../store/authStore';
-import { usersApi } from '../api/users';
-import { useQueryClient } from '@tanstack/react-query';
-import { useUserSettings } from '../hooks/useUserSettings';
-import { ALL_SPEECH_LANGS, type LangCode } from '../lib/speechLangs';
+import { useState, FormEvent, useRef } from "react";
+import { useAuthStore } from "../store/authStore";
+import { usersApi } from "../api/users";
+import { useQueryClient } from "@tanstack/react-query";
+import { useUserSettings } from "../hooks/useUserSettings";
+import { ALL_SPEECH_LANGS, type LangCode } from "../lib/speechLangs";
 
 export default function ProfilePage() {
   const { user, setUser } = useAuthStore();
   const qc = useQueryClient();
   const { speechLangs, saveSpeechLangs } = useUserSettings();
 
-  const [name, setName] = useState(user?.name ?? '');
-  const [email, setEmail] = useState(user?.email ?? '');
-  const [password, setPassword] = useState('');
-  const [message, setMessage] = useState('');
-  const [error, setError] = useState('');
+  const [name, setName] = useState(user?.name ?? "");
+  const [email, setEmail] = useState(user?.email ?? "");
+  const [password, setPassword] = useState("");
+  const [message, setMessage] = useState("");
+  const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [langSaving, setLangSaving] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    setError('');
-    setMessage('');
+    setError("");
+    setMessage("");
     setLoading(true);
     try {
       const fd = new FormData();
-      fd.append('name', name);
-      fd.append('email', email);
-      if (password) fd.append('password', password);
+      fd.append("name", name);
+      fd.append("email", email);
+      if (password) fd.append("password", password);
       if (fileRef.current?.files?.[0]) {
-        fd.append('avatar', fileRef.current.files[0]);
+        fd.append("avatar", fileRef.current.files[0]);
       }
       const updatedUser = await usersApi.update(fd);
       setUser(updatedUser);
-      qc.invalidateQueries({ queryKey: ['currentUser'] });
-      setMessage('Profile updated successfully.');
-      setPassword('');
+      qc.invalidateQueries({ queryKey: ["currentUser"] });
+      setMessage("Profile updated successfully.");
+      setPassword("");
     } catch (err: unknown) {
       const msg = (err as { response?: { data?: { message?: string } } })?.response?.data?.message;
-      setError(msg || 'Failed to update profile.');
+      setError(msg || "Failed to update profile.");
     } finally {
       setLoading(false);
     }
   };
 
   const toggleLang = async (code: LangCode) => {
-    const next = speechLangs.includes(code)
-      ? speechLangs.filter((c) => c !== code)
-      : [...speechLangs, code];
+    const next = speechLangs.includes(code) ? speechLangs.filter((c) => c !== code) : [...speechLangs, code];
     if (next.length === 0) return;
     setLangSaving(true);
     try {
@@ -73,7 +71,7 @@ export default function ProfilePage() {
             />
           ) : (
             <div className="w-16 h-16 rounded-full bg-teal-100 dark:bg-teal-800 text-teal-700 dark:text-teal-300 flex items-center justify-center text-2xl font-bold">
-              {user?.name?.[0]?.toUpperCase() ?? 'U'}
+              {user?.name?.[0]?.toUpperCase() ?? "U"}
             </div>
           )}
           <div>
@@ -108,11 +106,12 @@ export default function ProfilePage() {
             <input
               type="email"
               value={email}
+              readOnly
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-200 dark:border-slate-600 rounded-md bg-white dark:bg-slate-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-teal-500"
+              className="w-full px-3 py-2 border border-gray-200 dark:border-slate-600 rounded-md bg-white dark:bg-slate-700 text-gray-500 dark:text-gray-400 focus:outline-none focus:ring-2 focus:ring-teal-500"
             />
           </div>
-          <div>
+          {/* <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               New password <span className="text-gray-400 font-normal">(leave blank to keep current)</span>
             </label>
@@ -124,23 +123,17 @@ export default function ProfilePage() {
               className="w-full px-3 py-2 border border-gray-200 dark:border-slate-600 rounded-md bg-white dark:bg-slate-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-teal-500"
               placeholder="••••••••"
             />
-          </div>
+          </div> */}
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Avatar</label>
-            <input
-              type="file"
-              accept="image/*"
-              ref={fileRef}
-              className="text-sm text-gray-600 dark:text-gray-300"
-            />
+            <input type="file" accept="image/*" ref={fileRef} className="text-sm text-gray-600 dark:text-gray-300" />
           </div>
 
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-teal-600 hover:bg-teal-700 disabled:opacity-60 text-white font-medium py-2 px-4 rounded-md transition-colors"
-          >
-            {loading ? 'Saving…' : 'Save changes'}
+            className="w-full bg-teal-600 hover:bg-teal-700 disabled:opacity-60 text-white font-medium py-2 px-4 rounded-md transition-colors">
+            {loading ? "Saving…" : "Save changes"}
           </button>
         </form>
       </div>
@@ -151,9 +144,7 @@ export default function ProfilePage() {
           <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wide">
             Speech &amp; voice languages
           </h2>
-          {langSaving && (
-            <span className="text-xs text-gray-400 dark:text-gray-500">Saving…</span>
-          )}
+          {langSaving && <span className="text-xs text-gray-400 dark:text-gray-500">Saving…</span>}
         </div>
         <p className="text-xs text-gray-400 dark:text-gray-500 mb-4">
           Selected languages appear as chips in the Speak and Voice input buttons. At least one must remain active.
@@ -171,8 +162,7 @@ export default function ProfilePage() {
                   active
                     ? "bg-teal-600 border-teal-600 text-white"
                     : "border-gray-200 dark:border-slate-600 text-gray-500 dark:text-gray-400 hover:border-teal-400 hover:text-teal-600 dark:hover:text-teal-400"
-                }`}
-              >
+                }`}>
                 {label}
                 <span className="ml-1.5 text-xs font-normal opacity-70">{name}</span>
               </button>

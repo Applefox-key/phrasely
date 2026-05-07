@@ -1,22 +1,22 @@
 import { useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import { useAuthStore } from './store/authStore';
-import { usersApi } from './api/users';
+import { useAuthStore } from './features/auth/authStore';
+import { usersApi } from './features/auth/usersApi';
 import { useQuery } from '@tanstack/react-query';
-import ProtectedRoute from './components/ProtectedRoute';
-import Navbar from './components/Navbar';
-import DemoBanner from './components/DemoBanner';
-import LoginPage from './pages/LoginPage';
-import RegisterPage from './pages/RegisterPage';
-import ResetPasswordPage from './pages/ResetPasswordPage';
-import TrainingPage from './pages/TrainingPage';
-import ExpressionsPage from './pages/ExpressionsPage';
-import ProfilePage from './pages/ProfilePage';
-import AboutPage from './pages/AboutPage';
-import RootRedirect from './pages/RootRedirect';
+import ProtectedRoute from './shared/components/ProtectedRoute';
+import Navbar from './shared/components/Navbar';
+import DemoBanner from './shared/components/DemoBanner';
+import LoginPage from './features/auth/LoginPage';
+import RegisterPage from './features/auth/RegisterPage';
+import ResetPasswordPage from './features/auth/ResetPasswordPage';
+import TrainingPage from './features/expressions/TrainingPage';
+import ExpressionsPage from './features/expressions/ExpressionsPage';
+import ProfilePage from './features/profile/ProfilePage';
+import AboutPage from './features/about/AboutPage';
+import RootRedirect from './features/auth/RootRedirect';
 
 export default function App() {
-  const { setUser, setInitializing, isInitializing, isDemo } = useAuthStore();
+  const { setUser, setInitializing, isInitializing, isDemo, clearAuth } = useAuthStore();
 
   // Strip OAuth ?token= from URL — cookie is already set by the server redirect
   useEffect(() => {
@@ -37,10 +37,14 @@ export default function App() {
   useEffect(() => {
     if (isDemo) return; // enterDemo() already set isInitializing: false
     if (user !== undefined || isError) {
-      if (user) setUser(user);
+      if (user?.id && user?.email) {
+        setUser(user);
+      } else if (user !== undefined) {
+        clearAuth();
+      }
       setInitializing(false);
     }
-  }, [user, isError, isDemo, setUser, setInitializing]);
+  }, [user, isError, isDemo, setUser, setInitializing, clearAuth]);
 
   if (isInitializing) {
     return (

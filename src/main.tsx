@@ -3,8 +3,8 @@ import ReactDOM from 'react-dom/client';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import App from './App';
 import './index.css';
-import { registerClearAuth } from './api/client';
-import { useAuthStore } from './store/authStore';
+import { registerClearAuth } from './shared/api/client';
+import { useAuthStore } from './features/auth/authStore';
 
 registerClearAuth(() => useAuthStore.getState().clearAuth());
 

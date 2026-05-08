@@ -18,14 +18,6 @@ import RootRedirect from './features/auth/RootRedirect';
 export default function App() {
   const { setUser, setInitializing, isInitializing, isDemo, clearAuth } = useAuthStore();
 
-  // Strip OAuth ?token= from URL — cookie is already set by the server redirect
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    if (params.has('token')) {
-      window.history.replaceState({}, '', window.location.pathname);
-    }
-  }, []);
-
   // Skip the session check entirely in demo mode — demo user is already set
   const { data: user, isError } = useQuery({
     queryKey: ['currentUser'],

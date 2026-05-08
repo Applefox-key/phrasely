@@ -73,9 +73,9 @@ export default function Navbar() {
             {isAuthenticated ? (
               <div className="flex items-center gap-2">
                 <Link to="/profile" title="Profile">
-                  {user?.avatar ? (
+                  {user?.img ? (
                     <img
-                      src={user.avatar}
+                      src={`https://api.learnapp.pro/img/avatars?img=${user.img}&userid=${user.id}`}
                       alt={user.name}
                       className="w-8 h-8 rounded-full object-cover border border-gray-200 dark:border-slate-600 hover:ring-2 hover:ring-teal-400 transition-all"
                     />

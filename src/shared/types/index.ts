@@ -2,7 +2,7 @@ export interface User {
   id: number;
   name: string;
   email: string;
-  avatar?: string;
+  img?: string;
   settings?: string; // JSON string
 }
 

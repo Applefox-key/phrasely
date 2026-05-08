@@ -118,9 +118,9 @@ export default function TrainingPage() {
   const hint = current?.hintForReading;
 
   return (
-    <div className="flex flex-col h-[calc(100vh-3.5rem)]">
+    <div className="flex flex-col h-[calc(100vh-3.5rem)] ">
       {/* Header */}
-      <div className="bg-white dark:bg-slate-800 border-b border-gray-200 dark:border-slate-700 px-4 py-3 flex items-center justify-between gap-4 flex-wrap">
+      <div className="bg-white dark:bg-slate-800 border-b border-gray-200 dark:border-slate-700 px-4 py-3 flex items-center justify-between gap-4 flex-wrap ">
         {labels && labels.length > 0 && (
           <select
             value={labelFilter ?? ""}
@@ -175,7 +175,9 @@ export default function TrainingPage() {
             checked={showCountBtns}
             onChange={(e) => {
               setShowCountBtns(e.target.checked);
-              import("../../shared/utils/settings").then(({ setSettings }) => setSettings("showCountBtns", e.target.checked));
+              import("../../shared/utils/settings").then(({ setSettings }) =>
+                setSettings("showCountBtns", e.target.checked),
+              );
             }}
             className="rounded border-gray-300"
           />

@@ -2,9 +2,14 @@ import axios from 'axios';
 
 // Defer importing the auth store to break the circular dependency
 let _clearAuth: (() => void) | null = null;
+let _token: string | null = null;
 
 export const registerClearAuth = (fn: () => void) => {
   _clearAuth = fn;
+};
+
+export const setAuthToken = (token: string | null) => {
+  _token = token;
 };
 
 const apiClient = axios.create({
@@ -12,8 +17,10 @@ const apiClient = axios.create({
   withCredentials: true,
 });
 
-// Wrap POST/PATCH/PUT body in { data: ... }
 apiClient.interceptors.request.use((config) => {
+  if (_token) {
+    config.headers.Authorization = `Bearer ${_token}`;
+  }
   if (
     config.data &&
     ['post', 'patch', 'put'].includes(config.method?.toLowerCase() ?? '') &&

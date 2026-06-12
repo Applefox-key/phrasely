@@ -75,7 +75,7 @@ export default function Navbar() {
                 <Link to="/profile" title="Profile">
                   {user?.img ? (
                     <img
-                      src={`https://api.learnapp.pro/img/avatars?img=${user.img}&userid=${user.id}`}
+                      src={`https://api.learnypie.com/img/avatars?img=${user.img}&userid=${user.id}`}
                       alt={user.name}
                       className="w-8 h-8 rounded-full object-cover border border-gray-200 dark:border-slate-600 hover:ring-2 hover:ring-teal-400 transition-all"
                     />

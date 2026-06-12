@@ -58,8 +58,7 @@ export default function ProfilePage() {
   };
 
   const avatarSrc =
-    previewUrl ||
-    (user?.img ? `https://api.learnapp.pro/img/avatars?img=${user.img}&userid=${user.id}` : null);
+    previewUrl || (user?.img ? `https://api.learnypie.com/img/avatars?img=${user.img}&userid=${user.id}` : null);
 
   return (
     <div className="max-w-lg mx-auto px-4 py-8">
@@ -69,9 +68,7 @@ export default function ProfilePage() {
         <div className="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-gray-200 dark:border-slate-700 p-6">
           {/* Avatar */}
           <div className="flex items-center gap-4 mb-6">
-            <div
-              className="relative group cursor-pointer w-16 h-16 shrink-0"
-              onClick={() => fileRef.current?.click()}>
+            <div className="relative group cursor-pointer w-16 h-16 shrink-0" onClick={() => fileRef.current?.click()}>
               {avatarSrc ? (
                 <img
                   src={avatarSrc}
@@ -97,13 +94,7 @@ export default function ProfilePage() {
                   <circle cx="12" cy="13" r="4" />
                 </svg>
               </div>
-              <input
-                type="file"
-                accept="image/*"
-                ref={fileRef}
-                className="hidden"
-                onChange={handleFileChange}
-              />
+              <input type="file" accept="image/*" ref={fileRef} className="hidden" onChange={handleFileChange} />
             </div>
             <div>
               <p className="font-medium text-gray-900 dark:text-gray-100">{user?.name}</p>
@@ -124,9 +115,7 @@ export default function ProfilePage() {
 
           <div className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Name
-              </label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Name</label>
               <input
                 type="text"
                 value={name}
@@ -135,9 +124,7 @@ export default function ProfilePage() {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Email
-              </label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Email</label>
               <input
                 type="email"
                 value={user?.email ?? ""}
@@ -154,8 +141,7 @@ export default function ProfilePage() {
             Speech &amp; voice languages
           </h2>
           <p className="text-xs text-gray-400 dark:text-gray-500 mb-4">
-            Selected languages appear as chips in the Speak and Voice input buttons. At least one
-            must remain active.
+            Selected languages appear as chips in the Speak and Voice input buttons. At least one must remain active.
           </p>
           <div className="flex flex-wrap gap-2">
             {ALL_SPEECH_LANGS.map(({ code, label, name: langName }) => {

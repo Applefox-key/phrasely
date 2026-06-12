@@ -82,7 +82,7 @@ export default function AboutPage() {
         <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-2">Learn More</h1>
         <p className="text-gray-500 dark:text-gray-400">
           about the <strong>90 seconds method</strong> — or{" "}
-          <a href="https://flashcards.learnapp.pro" className="text-teal-600 dark:text-teal-400 hover:underline">
+          <a href="https://flashcards.learnypie.com" className="text-teal-600 dark:text-teal-400 hover:underline">
             try the flashcard method
           </a>
         </p>
@@ -174,12 +174,12 @@ export default function AboutPage() {
           Get started for free
         </Link>
         <p className="text-xs text-gray-400 dark:text-gray-500">
-          Other learnapp.pro projects:{" "}
-          <a href="https://flashcards.learnapp.pro" className="hover:text-teal-600 hover:dark:text-teal-400 underline">
+          Other learnypie.com projects:{" "}
+          <a href="https://flashcards.learnypie.com" className="hover:text-teal-600 hover:dark:text-teal-400 underline">
             FlashMinds
           </a>
           {" · "}
-          <a href="https://tracker.learnapp.pro" className="hover:text-teal-600 hover:dark:text-teal-400 underline">
+          <a href="https://tracker.learnypie.com" className="hover:text-teal-600 hover:dark:text-teal-400 underline">
             Tracker
           </a>
         </p>

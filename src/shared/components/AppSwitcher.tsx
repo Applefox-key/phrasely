@@ -3,7 +3,7 @@ import { useState, useRef, useEffect } from "react";
 const apps = [
   {
     name: "FlashMinds",
-    url: "https://flashcards.learnapp.pro",
+    url: "https://flashcards.learnypie.com",
     icon: "🃏",
     current: false,
   },
@@ -15,12 +15,12 @@ const apps = [
   },
   {
     name: "Tracker",
-    url: "https://tracker.learnapp.pro",
+    url: "https://tracker.learnypie.com",
     icon: "📋",
     current: false,
   },
   {
-    name: "learnapp.pro",
+    name: "learnypie.com",
     url: null,
     icon: "🌐",
     current: false,
@@ -61,7 +61,7 @@ export default function AppSwitcher() {
       {open && (
         <div className="absolute right-0 mt-2 w-64 bg-white dark:bg-slate-800 rounded-lg shadow-md border border-gray-200 dark:border-slate-700 p-3 z-50">
           <p className="text-xs font-medium text-gray-400 dark:text-gray-500 uppercase tracking-wide mb-2 px-1">
-            learnapp.pro
+            learnypie.com
           </p>
           <div className="grid grid-cols-2 gap-2">
             {apps.map((app) => (

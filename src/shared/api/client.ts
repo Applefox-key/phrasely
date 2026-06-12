@@ -13,7 +13,7 @@ export const setAuthToken = (token: string | null) => {
 };
 
 const apiClient = axios.create({
-  baseURL: 'https://api.learnapp.pro',
+  baseURL: 'https://api.learnypie.com',
   withCredentials: true,
 });
 

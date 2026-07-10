@@ -57,8 +57,20 @@ export interface RegisterData {
   password: string;
 }
 
-export interface Settings {
-  showCountBtns?: boolean;
+export interface PhrasesSettings {
+  onboarded?: boolean;
   dailyQueueLimit?: number;
+  lastQueueUpdate?: string;
+  theme?: {
+    one?: Record<string, unknown>;
+    two?: Record<string, unknown>;
+    three?: Record<string, unknown>;
+  };
+}
+
+export interface Settings {
+  langUI?: string;
+  speechLangs?: string[];
+  phrases?: PhrasesSettings;
   [key: string]: unknown;
 }

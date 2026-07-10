@@ -30,8 +30,19 @@ export const usersApi = {
 
   updateSettings: async (settings: Record<string, unknown>) => {
     const current = await usersApi.getMe();
-    const existing = current.settings ? JSON.parse(current.settings as string) : {};
-    const merged = { ...existing, ...settings };
+    const existing: Record<string, unknown> = current.settings ? JSON.parse(current.settings as string) : {};
+    const merged: Record<string, unknown> = { ...existing };
+    for (const [key, value] of Object.entries(settings)) {
+      const existingVal = existing[key];
+      if (
+        value !== null && typeof value === 'object' && !Array.isArray(value) &&
+        existingVal !== null && typeof existingVal === 'object' && !Array.isArray(existingVal)
+      ) {
+        merged[key] = { ...(existingVal as Record<string, unknown>), ...(value as Record<string, unknown>) };
+      } else {
+        merged[key] = value;
+      }
+    }
     const fd = new FormData();
     fd.append('settings', JSON.stringify(merged));
     return apiClient.patch('/users', fd, {

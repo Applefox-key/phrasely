@@ -761,7 +761,7 @@ function SettingsPanel() {
       const user = useAuthStore.getState().user;
       if (!user?.settings) return 0;
       const s = typeof user.settings === "string" ? JSON.parse(user.settings) : user.settings;
-      return s.dailyQueueLimit ?? 0;
+      return s.phrases?.dailyQueueLimit ?? 0;
     } catch {
       return 0;
     }
@@ -790,7 +790,7 @@ function SettingsPanel() {
   const saveQueueLimit = async () => {
     setQueueSaving(true);
     try {
-      const updated = await usersApi.updateSettings({ dailyQueueLimit: queueLimit });
+      const updated = await usersApi.updateSettings({ phrases: { dailyQueueLimit: queueLimit } });
       useAuthStore.getState().setUser(updated);
       setQueueSaved(true);
       setTimeout(() => setQueueSaved(false), 2000);

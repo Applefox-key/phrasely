@@ -68,8 +68,10 @@ export default function Navbar() {
 
           {/* Right actions */}
           <div className="flex items-center gap-2">
-            <DarkModeToggle />
-            <AppSwitcher />
+            <div className="hidden sm:flex items-center gap-2">
+              <DarkModeToggle />
+              <AppSwitcher />
+            </div>
             {isAuthenticated ? (
               <div className="flex items-center gap-2">
                 <Link to="/profile" title="Profile">
@@ -108,44 +110,6 @@ export default function Navbar() {
           </div>
         </div>
 
-        {/* Mobile nav */}
-        <div className="sm:hidden flex items-center gap-1 pb-2 overflow-x-auto">
-          {isAuthenticated ? (
-            <>
-              <NavLink to="/training" active={isActive("/training")}>
-                Training
-              </NavLink>
-              <NavLink to="/expressions" active={isActive("/expressions")}>
-                Expressions
-              </NavLink>
-              <NavLink to="/about" active={isActive("/about")}>
-                About
-              </NavLink>
-              <button
-                onClick={() => logout()}
-                title="Sign out"
-                className="ml-auto p-1.5 rounded-md text-gray-400 dark:text-gray-500 hover:text-red-500 hover:dark:text-red-400 hover:bg-gray-50 hover:dark:bg-slate-700 transition-colors shrink-0">
-                <svg
-                  viewBox="0 0 24 24"
-                  width="18"
-                  height="18"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="1.75"
-                  strokeLinecap="round"
-                  strokeLinejoin="round">
-                  <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
-                  <polyline points="16 17 21 12 16 7" />
-                  <line x1="21" y1="12" x2="9" y2="12" />
-                </svg>
-              </button>
-            </>
-          ) : (
-            <NavLink to="/about" active={isActive("/about")}>
-              About
-            </NavLink>
-          )}
-        </div>
       </div>
     </nav>
   );

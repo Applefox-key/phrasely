@@ -5,6 +5,7 @@ import { usersApi } from './features/auth/usersApi';
 import { useQuery } from '@tanstack/react-query';
 import ProtectedRoute from './shared/components/ProtectedRoute';
 import Navbar from './shared/components/Navbar';
+import MobileBottomNav from './shared/components/MobileBottomNav';
 import DemoBanner from './shared/components/DemoBanner';
 import LoginPage from './features/auth/LoginPage';
 import RegisterPage from './features/auth/RegisterPage';
@@ -48,9 +49,10 @@ export default function App() {
 
   return (
     <BrowserRouter>
-      <div className="min-h-screen bg-gray-50 dark:bg-slate-900 text-gray-900 dark:text-gray-100">
+      <div className="min-h-screen bg-gray-50 dark:bg-slate-900 text-gray-900 dark:text-gray-100 pb-16 sm:pb-0">
         <Navbar />
         <DemoBanner />
+        <MobileBottomNav />
         <Routes>
           <Route path="/" element={<RootRedirect />} />
           <Route path="/login" element={<LoginPage />} />

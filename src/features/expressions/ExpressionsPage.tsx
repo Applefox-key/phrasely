@@ -1,4 +1,4 @@
-import { useState, useMemo, FormEvent } from "react";
+import { useState, useMemo, FormEvent, useEffect, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { expressionsApi } from "./expressionsApi";
@@ -16,6 +16,7 @@ import { useDemoStore } from "../demo/demoStore";
 import { useDemoExpressions, useDemoLabels } from "../demo/useDemoExpressions";
 import ConfirmDialog from "../../shared/components/ConfirmDialog";
 import { useConfirm } from "../../shared/hooks/useConfirm";
+import { useMobileNavStore } from "../../shared/mobileNavStore";
 
 type Panel = "manage" | "labels" | "settings" | null;
 
@@ -90,6 +91,10 @@ export default function ExpressionsPage() {
   const [batchStatus, setBatchStatus] = useState("active");
   const [batchQueueAction, setBatchQueueAction] = useState<"add" | "remove">("add");
 
+  // ── mobile-specific state ─────────────────────────────────────
+  const [showMobileSettings, setShowMobileSettings] = useState(false);
+  const [showMobileLabels, setShowMobileLabels] = useState(false);
+
   // ── label management ──────────────────────────────────────────
   const [newLabelName, setNewLabelName] = useState("");
   const createLabelMutation = useMutation({
@@ -104,6 +109,35 @@ export default function ExpressionsPage() {
   // ── demo mutation helpers ─────────────────────────────────────
   const demoCreateLabel = (name: string) => demoStore.addLabel(name);
   const demoDeleteLabel = (id: number) => demoStore.deleteLabel(id);
+
+  // ── mobile nav store registration ─────────────────────────────
+  const { setExpressionsActions, clearExpressionsActions } = useMobileNavStore();
+  const rawExpressionsRef = useRef(rawExpressions);
+  rawExpressionsRef.current = rawExpressions;
+
+  const stableExport = useCallback(() => {
+    const lines = rawExpressionsRef.current.map((e) => `${e.expression}; ${e.phrase}`).join("\n");
+    const blob = new Blob([lines], { type: "text/plain" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "phrasely-export.txt";
+    a.click();
+    URL.revokeObjectURL(url);
+  }, []);
+
+  useEffect(() => {
+    setExpressionsActions({
+      onAddSingle: () => setShowAddSingle(true),
+      onAddText: () => setShowAddText(true),
+      onAddFile: () => setShowAddFile(true),
+      onDeleteMode: () => { setSelectMode(true); setBatchAction("delete"); },
+      onExport: stableExport,
+      onOpenLabels: () => setShowMobileLabels(true),
+      onOpenSettings: () => setShowMobileSettings(true),
+    });
+    return () => clearExpressionsActions();
+  }, [stableExport, setExpressionsActions, clearExpressionsActions]);
 
   // ── filtered list ─────────────────────────────────────────────
   const expressions = useMemo(() => {
@@ -293,8 +327,8 @@ export default function ExpressionsPage() {
 
   return (
     <div className="flex h-[calc(100vh-3.5rem)]">
-      {/* Sidebar */}
-      <aside className="w-12 shrink-0 bg-white dark:bg-slate-800 border-r border-gray-200 dark:border-slate-700 flex flex-col items-center py-3 gap-2">
+      {/* Sidebar — desktop only */}
+      <aside className="hidden sm:flex w-12 shrink-0 bg-white dark:bg-slate-800 border-r border-gray-200 dark:border-slate-700 flex-col items-center py-3 gap-2">
         <SidebarBtn title="Manage" active={activePanel === "manage"} onClick={() => togglePanel("manage")}>
           ⋯
         </SidebarBtn>
@@ -345,9 +379,9 @@ export default function ExpressionsPage() {
         </SidebarBtn>
       </aside>
 
-      {/* Panel */}
+      {/* Panel — desktop only */}
       {activePanel && (
-        <div className="w-56 shrink-0 bg-white dark:bg-slate-800 border-r border-gray-200 dark:border-slate-700 p-3 overflow-y-auto">
+        <div className="hidden sm:block w-56 shrink-0 bg-white dark:bg-slate-800 border-r border-gray-200 dark:border-slate-700 p-3 overflow-y-auto">
           {activePanel === "manage" && (
             <ManagePanel
               onAddSingle={() => setShowAddSingle(true)}
@@ -568,7 +602,7 @@ export default function ExpressionsPage() {
         )}
 
         {/* List */}
-        <div className="flex-1 overflow-y-auto">
+        <div className="flex-1 overflow-y-auto pb-16 sm:pb-0">
           {isLoading ? (
             <div className="flex items-center justify-center h-32">
               <div className="w-6 h-6 border-4 border-teal-600 border-t-transparent rounded-full animate-spin" />
@@ -628,6 +662,70 @@ export default function ExpressionsPage() {
         />
       )}
       <ConfirmDialog {...dialogProps} />
+
+      {/* ── Mobile FAB — Add expression ────────────────────────── */}
+      {!selectMode && (
+        <button
+          onClick={() => setShowAddSingle(true)}
+          className="sm:hidden fixed bottom-20 right-4 z-30 w-14 h-14 bg-teal-600 hover:bg-teal-700 text-white rounded-full shadow-lg flex items-center justify-center transition-colors">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="w-6 h-6">
+            <path d="M12 6v12M6 12h12" />
+          </svg>
+        </button>
+      )}
+
+      {/* ── Mobile Settings modal ─────────────────────────────── */}
+      {showMobileSettings && (
+        <div className="sm:hidden fixed inset-0 z-[60] bg-white dark:bg-slate-900 flex flex-col">
+          <div className="flex items-center h-14 px-4 border-b border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 shrink-0">
+            <button
+              onClick={() => setShowMobileSettings(false)}
+              className="flex items-center gap-1.5 text-sm text-gray-500 dark:text-gray-400 hover:text-teal-600 dark:hover:text-teal-400 transition-colors">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M19 12H5M12 19l-7-7 7-7" />
+              </svg>
+              Back
+            </button>
+            <h2 className="text-base font-semibold ml-4 text-gray-900 dark:text-gray-100">Settings</h2>
+          </div>
+          <div className="flex-1 overflow-y-auto p-5">
+            <SettingsPanel />
+          </div>
+        </div>
+      )}
+
+      {/* ── Mobile Labels modal ───────────────────────────────── */}
+      {showMobileLabels && (
+        <div className="sm:hidden fixed inset-0 z-[60] bg-white dark:bg-slate-900 flex flex-col">
+          <div className="flex items-center h-14 px-4 border-b border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 shrink-0">
+            <button
+              onClick={() => setShowMobileLabels(false)}
+              className="flex items-center gap-1.5 text-sm text-gray-500 dark:text-gray-400 hover:text-teal-600 dark:hover:text-teal-400 transition-colors">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M19 12H5M12 19l-7-7 7-7" />
+              </svg>
+              Back
+            </button>
+            <h2 className="text-base font-semibold ml-4 text-gray-900 dark:text-gray-100">Labels</h2>
+          </div>
+          <div className="flex-1 overflow-y-auto p-5">
+            <LabelsPanel
+              labels={labels}
+              newName={newLabelName}
+              setNewName={setNewLabelName}
+              onCreate={(name) => {
+                if (isDemo) demoCreateLabel(name);
+                else createLabelMutation.mutate(name);
+                setNewLabelName("");
+              }}
+              onDelete={(id) => {
+                if (isDemo) demoDeleteLabel(id);
+                else deleteLabelMutation.mutate(id);
+              }}
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 }

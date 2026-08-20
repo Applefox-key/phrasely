@@ -104,10 +104,10 @@ export default function ExpressionRow({
         className={`sm:hidden w-2 h-2 rounded-full shrink-0 ${STATUS_DOT_COLORS[expression.status] ?? ""}`}
         title={expression.status}
       />
-      <span
+      {/* <span
         className={`hidden sm:inline text-xs rounded-full px-2 py-0.5 font-medium ${STATUS_COLORS[expression.status] ?? ""}`}>
         {expression.status}
-      </span>
+      </span> */}
       {/* Label quick-assign */}
       <select
         value={expression.labelid ?? ""}

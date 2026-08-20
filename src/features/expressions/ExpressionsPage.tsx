@@ -111,9 +111,13 @@ export default function ExpressionsPage() {
   const demoDeleteLabel = (id: number) => demoStore.deleteLabel(id);
 
   // ── mobile nav store registration ─────────────────────────────
-  const { setExpressionsActions, clearExpressionsActions } = useMobileNavStore();
+  const setExpressionsActions = useMobileNavStore((s) => s.setExpressionsActions);
+  const clearExpressionsActions = useMobileNavStore((s) => s.clearExpressionsActions);
+  const setSelectBar = useMobileNavStore((s) => s.setSelectBar);
   const rawExpressionsRef = useRef(rawExpressions);
   rawExpressionsRef.current = rawExpressions;
+  const executeBatchActionRef = useRef<() => Promise<void>>(() => Promise.resolve());
+  const expressionsForSelectRef = useRef<import("./Expression").Expression[]>([]);
 
   const stableExport = useCallback(() => {
     const lines = rawExpressionsRef.current.map((e) => `${e.expression}; ${e.phrase}`).join("\n");
@@ -131,13 +135,45 @@ export default function ExpressionsPage() {
       onAddSingle: () => setShowAddSingle(true),
       onAddText: () => setShowAddText(true),
       onAddFile: () => setShowAddFile(true),
-      onDeleteMode: () => { setSelectMode(true); setBatchAction("delete"); },
+      onDeleteMode: () => {
+        setSelectMode(true);
+        setBatchAction("delete");
+      },
       onExport: stableExport,
       onOpenLabels: () => setShowMobileLabels(true),
       onOpenSettings: () => setShowMobileSettings(true),
     });
-    return () => clearExpressionsActions();
-  }, [stableExport, setExpressionsActions, clearExpressionsActions]);
+    return () => {
+      clearExpressionsActions();
+      setSelectBar(null);
+    };
+  }, [stableExport, setExpressionsActions, clearExpressionsActions, setSelectBar]);
+
+  useEffect(() => {
+    if (!selectMode) {
+      setSelectBar(null);
+      return;
+    }
+    setSelectBar({
+      selectedCount: selected.size,
+      batchAction,
+      batchLabel,
+      batchStatus,
+      batchQueueAction,
+      labels,
+      onCancel: () => {
+        setSelectMode(false);
+        setSelected(new Set());
+      },
+      onSelectAll: () => setSelected(new Set(expressionsForSelectRef.current.map((e) => e.id))),
+      onUnselectAll: () => setSelected(new Set()),
+      onExecute: () => executeBatchActionRef.current(),
+      onChangeBatchAction: setBatchAction,
+      onChangeBatchLabel: setBatchLabel,
+      onChangeBatchStatus: setBatchStatus,
+      onChangeBatchQueueAction: setBatchQueueAction,
+    });
+  }, [selectMode, selected.size, batchAction, batchLabel, batchStatus, batchQueueAction, labels, setSelectBar]);
 
   // ── filtered list ─────────────────────────────────────────────
   const expressions = useMemo(() => {
@@ -155,6 +191,8 @@ export default function ExpressionsPage() {
         return true;
       });
   }, [rawExpressions, filterLabel, filterStatus, filterStage, filterInQueue, filterText]);
+
+  expressionsForSelectRef.current = expressions;
 
   const grouped = useMemo(() => {
     if (!groupByLabel) return null;
@@ -273,6 +311,7 @@ export default function ExpressionsPage() {
       URL.revokeObjectURL(url);
     }
   };
+  executeBatchActionRef.current = executeBatchAction;
 
   const exportTxt = () => {
     const lines = rawExpressions.map((e) => `${e.expression}; ${e.phrase}`).join("\n");
@@ -427,51 +466,75 @@ export default function ExpressionsPage() {
         <div className="bg-white dark:bg-slate-800 border-b border-gray-200 dark:border-slate-700 px-3 py-2">
           {/* Row 1 — always visible */}
           <div className="flex items-center gap-2">
-            <button
-              onClick={() => {
-                setSelectMode((v) => !v);
-                setSelected(new Set());
-              }}
-              className={`text-xs px-2.5 py-1.5 rounded-md border transition-colors shrink-0 ${
-                selectMode
-                  ? "bg-teal-50 dark:bg-teal-900/30 border-teal-300 dark:border-teal-700 text-teal-700 dark:text-teal-400"
-                  : "border-gray-200 dark:border-slate-600 text-gray-600 dark:text-gray-300 hover:bg-gray-50 hover:dark:bg-slate-700"
-              }`}>
-              Select
-            </button>
+            {/* Mobile select mode: compact cancel/count/all header */}
+            {selectMode && (
+              <div className="sm:hidden flex items-center w-full">
+                <button
+                  onClick={() => {
+                    setSelectMode(false);
+                    setSelected(new Set());
+                  }}
+                  className="text-sm text-gray-500 dark:text-gray-400 px-2.5 py-1.5 rounded-md hover:bg-gray-100 dark:hover:bg-slate-700 transition-colors">
+                  Cancel
+                </button>
+                <span className="flex-1 text-center text-sm font-medium text-teal-700 dark:text-teal-400">
+                  {selected.size} selected
+                </span>
+                <button
+                  onClick={() => setSelected(new Set(expressionsForSelectRef.current.map((e) => e.id)))}
+                  className="text-sm text-teal-600 dark:text-teal-400 px-2.5 py-1.5 rounded-md hover:bg-teal-50 dark:hover:bg-teal-900/30 transition-colors">
+                  All
+                </button>
+              </div>
+            )}
+            {/* Normal filter bar: desktop always, mobile only when not in select mode */}
+            <div className={`${selectMode ? "hidden sm:flex" : "flex"} items-center gap-2 w-full`}>
+              <button
+                onClick={() => {
+                  setSelectMode((v) => !v);
+                  setSelected(new Set());
+                }}
+                className={`text-xs px-2.5 py-1.5 rounded-md border transition-colors shrink-0 ${
+                  selectMode
+                    ? "bg-teal-50 dark:bg-teal-900/30 border-teal-300 dark:border-teal-700 text-teal-700 dark:text-teal-400"
+                    : "border-gray-200 dark:border-slate-600 text-gray-600 dark:text-gray-300 hover:bg-gray-50 hover:dark:bg-slate-700"
+                }`}>
+                Select
+              </button>
 
-            <button
-              onClick={() => setGroupByLabel((v) => !v)}
-              className={`text-xs px-2.5 py-1.5 rounded-md border transition-colors shrink-0 ${
-                groupByLabel
-                  ? "bg-teal-50 dark:bg-teal-900/30 border-teal-300 dark:border-teal-700 text-teal-700 dark:text-teal-400"
-                  : "border-gray-200 dark:border-slate-600 text-gray-600 dark:text-gray-300 hover:bg-gray-50 hover:dark:bg-slate-700"
-              }`}>
-              {groupByLabel ? "Flat" : "Group"}
-            </button>
+              <button
+                onClick={() => setGroupByLabel((v) => !v)}
+                className={`text-xs px-2.5 py-1.5 rounded-md border transition-colors shrink-0 ${
+                  groupByLabel
+                    ? "bg-teal-50 dark:bg-teal-900/30 border-teal-300 dark:border-teal-700 text-teal-700 dark:text-teal-400"
+                    : "border-gray-200 dark:border-slate-600 text-gray-600 dark:text-gray-300 hover:bg-gray-50 hover:dark:bg-slate-700"
+                }`}>
+                {groupByLabel ? "Flat" : "Group"}
+              </button>
 
-            <input
-              type="search"
-              value={filterText}
-              onChange={(e) => setFilterText(e.target.value)}
-              placeholder="Search…"
-              className="flex-1 min-w-0 text-sm border border-gray-200 dark:border-slate-600 rounded-md px-3 py-1.5 bg-white dark:bg-slate-700 text-gray-900 dark:text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-teal-500"
-            />
+              <input
+                type="search"
+                value={filterText}
+                onChange={(e) => setFilterText(e.target.value)}
+                placeholder="Search…"
+                className="flex-1 min-w-0 text-sm border border-gray-200 dark:border-slate-600 rounded-md px-3 py-1.5 bg-white dark:bg-slate-700 text-gray-900 dark:text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-teal-500"
+              />
 
-            <span className="text-xs text-gray-400 dark:text-gray-500 shrink-0">{expressions.length}</span>
+              <span className="text-xs text-gray-400 dark:text-gray-500 shrink-0">{expressions.length}</span>
 
-            <button
-              onClick={() => setFiltersOpen((v) => !v)}
-              className={`shrink-0 p-1.5 rounded-md border transition-colors ${
-                filtersOpen || filterLabel || filterStatus || filterStage || filterInQueue
-                  ? "border-teal-300 dark:border-teal-700 text-teal-600 dark:text-teal-400 bg-teal-50 dark:bg-teal-900/30"
-                  : "border-gray-200 dark:border-slate-600 text-gray-500 dark:text-gray-400 hover:bg-gray-50 hover:dark:bg-slate-700"
-              }`}
-              title="Filters">
-              <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
-                <path d="M3 4h18l-7 8v6l-4 2v-8L3 4z" />
-              </svg>
-            </button>
+              <button
+                onClick={() => setFiltersOpen((v) => !v)}
+                className={`shrink-0 p-1.5 rounded-md border transition-colors ${
+                  filtersOpen || filterLabel || filterStatus || filterStage || filterInQueue
+                    ? "border-teal-300 dark:border-teal-700 text-teal-600 dark:text-teal-400 bg-teal-50 dark:bg-teal-900/30"
+                    : "border-gray-200 dark:border-slate-600 text-gray-500 dark:text-gray-400 hover:bg-gray-50 hover:dark:bg-slate-700"
+                }`}
+                title="Filters">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
+                  <path d="M3 4h18l-7 8v6l-4 2v-8L3 4z" />
+                </svg>
+              </button>
+            </div>
           </div>
 
           {/* Row 2 — collapsible filters */}
@@ -526,9 +589,9 @@ export default function ExpressionsPage() {
           )}
         </div>
 
-        {/* Batch action bar */}
+        {/* Batch action bar — desktop only; mobile uses bottom action bar */}
         {selectMode && (
-          <div className="bg-teal-50 dark:bg-teal-900/20 border-b border-teal-200 dark:border-teal-800 px-4 py-2 flex flex-wrap gap-3 items-center">
+          <div className="hidden sm:flex bg-teal-50 dark:bg-teal-900/20 border-b border-teal-200 dark:border-teal-800 px-4 py-2 flex-wrap gap-3 items-center">
             <span className="text-sm font-medium text-teal-700 dark:text-teal-400">{selected.size} selected</span>
             <select
               value={batchAction}
@@ -602,7 +665,8 @@ export default function ExpressionsPage() {
         )}
 
         {/* List */}
-        <div className="flex-1 overflow-y-auto pb-16 sm:pb-0">
+        <div
+          className={`flex-1 overflow-y-auto sm:pb-0 ${selectMode && (batchAction === "label" || batchAction === "status" || batchAction === "queue") ? "pb-28" : "pb-16"}`}>
           {isLoading ? (
             <div className="flex items-center justify-center h-32">
               <div className="w-6 h-6 border-4 border-teal-600 border-t-transparent rounded-full animate-spin" />
@@ -620,7 +684,7 @@ export default function ExpressionsPage() {
           ) : groupByLabel && grouped ? (
             Array.from(grouped.entries()).map(([label, items]) => (
               <div key={label}>
-                <div className="sticky top-0 bg-gray-50 dark:bg-slate-900 px-4 py-1.5 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide border-b border-gray-200 dark:border-slate-700">
+                <div className="sticky top-0 bg-zinc-300 dark:bg-slate-900 px-4 py-1.5 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide border-b border-gray-200 dark:border-slate-700">
                   {label} ({items.length})
                 </div>
                 {renderRows(items)}
@@ -668,7 +732,15 @@ export default function ExpressionsPage() {
         <button
           onClick={() => setShowAddSingle(true)}
           className="sm:hidden fixed bottom-20 right-4 z-30 w-14 h-14 bg-teal-600 hover:bg-teal-700 text-white rounded-full shadow-lg flex items-center justify-center transition-colors">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="w-6 h-6">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className="w-6 h-6">
             <path d="M12 6v12M6 12h12" />
           </svg>
         </button>
@@ -681,7 +753,15 @@ export default function ExpressionsPage() {
             <button
               onClick={() => setShowMobileSettings(false)}
               className="flex items-center gap-1.5 text-sm text-gray-500 dark:text-gray-400 hover:text-teal-600 dark:hover:text-teal-400 transition-colors">
-              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <svg
+                viewBox="0 0 24 24"
+                width="16"
+                height="16"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round">
                 <path d="M19 12H5M12 19l-7-7 7-7" />
               </svg>
               Back
@@ -701,7 +781,15 @@ export default function ExpressionsPage() {
             <button
               onClick={() => setShowMobileLabels(false)}
               className="flex items-center gap-1.5 text-sm text-gray-500 dark:text-gray-400 hover:text-teal-600 dark:hover:text-teal-400 transition-colors">
-              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <svg
+                viewBox="0 0 24 24"
+                width="16"
+                height="16"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round">
                 <path d="M19 12H5M12 19l-7-7 7-7" />
               </svg>
               Back

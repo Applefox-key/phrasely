@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { useAuthStore } from "../../features/auth/authStore";
-import { useMobileNavStore } from "../mobileNavStore";
+import { useMobileNavStore, type SelectBarConfig } from "../mobileNavStore";
 
 const OTHER_APPS = [
   { name: "FlashMinds", url: "https://flashcards.learnypie.com", icon: "🃏" },
@@ -11,7 +11,7 @@ const OTHER_APPS = [
 export default function MobileBottomNav() {
   const location = useLocation();
   const { isAuthenticated, logout } = useAuthStore();
-  const { expressionsActions } = useMobileNavStore();
+  const { expressionsActions, selectBar } = useMobileNavStore();
   const [moreOpen, setMoreOpen] = useState(false);
   const [dark, setDark] = useState(() => {
     try {
@@ -26,6 +26,8 @@ export default function MobileBottomNav() {
   const isExpressions = location.pathname === "/expressions";
   const isTraining = location.pathname === "/training";
   const hasExpressionsActions = isExpressions && expressionsActions !== null;
+
+  if (isTraining) return null;
 
   const toggleDark = () => {
     const next = !dark;
@@ -43,7 +45,66 @@ export default function MobileBottomNav() {
 
   return (
     <>
-      {/* ── Bottom navigation bar ─────────────────────────────── */}
+      {/* ── Select mode action bar — replaces nav on mobile ──── */}
+      {selectBar ? (
+        <div className="sm:hidden fixed bottom-0 left-0 right-0 z-40 bg-white dark:bg-slate-800 border-t border-teal-200 dark:border-teal-800 shadow-[0_-2px_12px_rgba(0,0,0,0.07)]">
+          {/* Sub-select row (label / status / queue) */}
+          {(selectBar.batchAction === "label" || selectBar.batchAction === "status" || selectBar.batchAction === "queue") && (
+            <div className="px-3 pt-2.5">
+              {selectBar.batchAction === "label" && (
+                <select
+                  value={selectBar.batchLabel ?? ""}
+                  onChange={(e) => selectBar.onChangeBatchLabel(e.target.value ? Number(e.target.value) : null)}
+                  className="w-full text-sm border border-gray-200 dark:border-slate-600 rounded-lg px-3 py-2 bg-white dark:bg-slate-700 text-gray-800 dark:text-gray-200">
+                  <option value="">No label</option>
+                  {selectBar.labels.map((l) => (
+                    <option key={l.id} value={l.id}>{l.name}</option>
+                  ))}
+                </select>
+              )}
+              {selectBar.batchAction === "status" && (
+                <select
+                  value={selectBar.batchStatus}
+                  onChange={(e) => selectBar.onChangeBatchStatus(e.target.value)}
+                  className="w-full text-sm border border-gray-200 dark:border-slate-600 rounded-lg px-3 py-2 bg-white dark:bg-slate-700 text-gray-800 dark:text-gray-200">
+                  {["new", "active", "paused", "completed"].map((s) => (
+                    <option key={s} value={s}>{s}</option>
+                  ))}
+                </select>
+              )}
+              {selectBar.batchAction === "queue" && (
+                <select
+                  value={selectBar.batchQueueAction}
+                  onChange={(e) => selectBar.onChangeBatchQueueAction(e.target.value as "add" | "remove")}
+                  className="w-full text-sm border border-gray-200 dark:border-slate-600 rounded-lg px-3 py-2 bg-white dark:bg-slate-700 text-gray-800 dark:text-gray-200">
+                  <option value="add">Add to queue</option>
+                  <option value="remove">Remove from queue</option>
+                </select>
+              )}
+            </div>
+          )}
+          {/* Main action row */}
+          <div className="flex items-center gap-2 px-3 h-16">
+            <select
+              value={selectBar.batchAction}
+              onChange={(e) => selectBar.onChangeBatchAction(e.target.value as SelectBarConfig["batchAction"])}
+              className="flex-1 text-sm border border-gray-200 dark:border-slate-600 rounded-lg px-3 py-2 bg-white dark:bg-slate-700 text-gray-800 dark:text-gray-200">
+              <option value="delete">Delete</option>
+              <option value="label">Assign label</option>
+              <option value="status">Set status</option>
+              <option value="queue">Queue manage</option>
+              <option value="download">Download</option>
+            </select>
+            <button
+              onClick={selectBar.onExecute}
+              disabled={selectBar.selectedCount === 0}
+              className="bg-teal-600 hover:bg-teal-700 disabled:opacity-40 text-white text-sm font-semibold px-5 h-10 rounded-lg transition-colors shrink-0">
+              Execute
+            </button>
+          </div>
+        </div>
+      ) : (
+      /* ── Bottom navigation bar ─────────────────────────────── */
       <nav className="sm:hidden fixed bottom-0 left-0 right-0 z-40 bg-white dark:bg-slate-800 border-t border-gray-200 dark:border-slate-700 flex h-16">
         {/* Expressions */}
         <Link
@@ -84,9 +145,10 @@ export default function MobileBottomNav() {
           More
         </button>
       </nav>
+      )}
 
       {/* ── More drawer ────────────────────────────────────────── */}
-      {moreOpen && (
+      {moreOpen && !selectBar && (
         <>
           {/* Overlay */}
           <div

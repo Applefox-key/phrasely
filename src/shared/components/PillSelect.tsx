@@ -64,10 +64,7 @@ export default function PillSelect({
   useEffect(() => {
     if (!open) return;
     const handle = (e: MouseEvent) => {
-      if (
-        !btnRef.current?.contains(e.target as Node) &&
-        !dropRef.current?.contains(e.target as Node)
-      ) {
+      if (!btnRef.current?.contains(e.target as Node) && !dropRef.current?.contains(e.target as Node)) {
         setOpen(false);
       }
     };
@@ -79,37 +76,46 @@ export default function PillSelect({
   const scheme = SCHEMES[colorScheme];
   const isMd = size === "md";
 
-  const dropdown = open && rect && createPortal(
-    <div
-      ref={dropRef}
-      style={{
-        position: "fixed",
-        top: upward ? rect.top - 4 : rect.bottom + 4,
-        left: rect.left,
-        transform: upward ? "translateY(-100%)" : "none",
-        zIndex: 9999,
-      }}
-      className="bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-600 rounded-lg shadow-lg py-1 min-w-[130px]">
-      <button
-        type="button"
-        onClick={() => { onChange(""); setOpen(false); }}
-        className={`w-full text-left ${isMd ? "text-sm px-4 py-2" : "text-xs px-3 py-1.5"} hover:bg-gray-50 dark:hover:bg-slate-700 text-gray-400 dark:text-gray-500 transition-colors`}>
-        {placeholder}
-      </button>
-      {options.map((o) => (
+  const dropdown =
+    open &&
+    rect &&
+    createPortal(
+      <div
+        ref={dropRef}
+        style={{
+          position: "fixed",
+          top: upward ? rect.top - 4 : rect.bottom + 4,
+          left: rect.left,
+          transform: upward ? "translateY(-100%)" : "none",
+          zIndex: 9999,
+        }}
+        className="bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-600 rounded-lg shadow-lg py-1 min-w-[130px]">
         <button
           type="button"
-          key={o.value}
-          onClick={() => { onChange(o.value); setOpen(false); }}
-          className={`w-full text-left ${isMd ? "text-sm px-4 py-2" : "text-xs px-3 py-1.5"} hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors ${
-            value === o.value ? `font-medium ${scheme.active}` : "text-gray-700 dark:text-gray-300"
-          }`}>
-          {o.label}
+          onClick={() => {
+            onChange("");
+            setOpen(false);
+          }}
+          className={`w-full text-left ${isMd ? "text-sm px-4 py-2" : "text-xs px-3 py-1.5"} hover:bg-gray-50 dark:hover:bg-slate-700 text-gray-400 dark:text-gray-500 transition-colors`}>
+          {placeholder}
         </button>
-      ))}
-    </div>,
-    document.body
-  );
+        {options.map((o) => (
+          <button
+            type="button"
+            key={o.value}
+            onClick={() => {
+              onChange(o.value);
+              setOpen(false);
+            }}
+            className={`w-full text-left ${isMd ? "text-sm px-4 py-2" : "text-xs px-3 py-1.5"} hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors ${
+              value === o.value ? `font-medium ${scheme.active}` : "text-gray-700 dark:text-gray-300"
+            }`}>
+            {o.label}
+          </button>
+        ))}
+      </div>,
+      document.body,
+    );
 
   return (
     <div className="relative shrink-0">

@@ -50,8 +50,7 @@ export default function EditModal({ expression, labels, initialTab, onSave, onCl
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <div
-        className="bg-white dark:bg-slate-800 rounded-lg shadow-xl w-full max-w-lg max-h-[90vh] flex flex-col">
+      <div className="bg-white dark:bg-slate-800 rounded-lg shadow-xl w-full max-w-[100vw] sm:max-w-lg max-h-[90vh] flex flex-col">
         {/* Header */}
         <div className="flex items-center justify-between p-4 bg-stone-300 dark:bg-slate-700 border-b border-gray-200 dark:border-slate-700 shrink-0">
           <h2 className="font-semibold text-gray-900 dark:text-gray-100">Expression Details</h2>

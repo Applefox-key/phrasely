@@ -488,6 +488,11 @@ export default function ExpressionsPage() {
                       className="text-sm text-teal-600 dark:text-teal-400 px-2.5 py-1.5 rounded-md hover:bg-teal-50 dark:hover:bg-teal-900/30 transition-colors">
                       All
                     </button>
+                    <button
+                      onClick={() => setSelected(new Set())}
+                      className="text-sm text-teal-600 dark:text-teal-400 px-2.5 py-1.5 rounded-md hover:bg-teal-50 dark:hover:bg-teal-900/30 transition-colors">
+                      NONE
+                    </button>
                   </div>
                 )}
                 {/* Normal filter bar: desktop always, mobile only when not in select mode */}
@@ -803,7 +808,7 @@ export default function ExpressionsPage() {
 
           {/* List */}
           <div
-            className={`sm:pb-0 ${selectMode && (batchAction === "label" || batchAction === "status" || batchAction === "queue") ? "pb-28" : "pb-16"}`}>
+            className={` sm:pb-0 ${selectMode && (batchAction === "label" || batchAction === "status" || batchAction === "queue") ? "pb-28" : "pb-16"}`}>
             {isLoading ? (
               <div className="flex items-center justify-center h-32">
                 <div className="w-6 h-6 border-4 border-teal-600 border-t-transparent rounded-full animate-spin" />

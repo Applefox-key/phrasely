@@ -2,6 +2,7 @@ import { Expression } from "../Expression";
 import type { Label } from "../../../shared/types";
 import { addSpanToExpInPrase } from "../texts";
 import PillSelect from "../../../shared/components/PillSelect";
+import StageProgressBar from "./StageProgressBar";
 
 interface Props {
   expression: Expression;
@@ -98,22 +99,14 @@ export default function ExpressionCard({
 
       {/* Bottom row: progress + status */}
       <div className="flex items-center justify-between">
-        <button
+        <StageProgressBar
+          stage={stage}
+          skips={skips}
           onClick={(e) => {
             e.stopPropagation();
             onInfoClick();
           }}
-          className="flex items-center gap-0.5 shrink-0"
-          title={`Stage ${stage}/9`}>
-          {Array.from({ length: 9 }).map((_, i) => (
-            <div
-              key={i}
-              className={`h-2 w-2 rounded-sm ${
-                i < stage ? "bg-teal-500 dark:bg-teal-400" : "bg-gray-200 dark:bg-slate-600"
-              }`}
-            />
-          ))}
-        </button>
+        />
 
         <span className={`text-xs rounded-full px-2 py-0.5 font-medium ${STATUS_COLORS[expression.status] ?? ""}`}>
           {expression.status}

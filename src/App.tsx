@@ -49,7 +49,7 @@ export default function App() {
 
   return (
     <BrowserRouter>
-      <div className="min-h-screen max-w-7xl m-auto bg-gray-50 dark:bg-slate-900 text-gray-900 dark:text-gray-100 pb-16 sm:pb-0">
+      <div className="h-dvh overflow-y-auto max-w-7xl m-auto bg-gray-50 dark:bg-slate-900 text-gray-900 dark:text-gray-100 pb-16 sm:pb-0">
         <Navbar />
         <DemoBanner />
         <MobileBottomNav />

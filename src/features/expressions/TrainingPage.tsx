@@ -26,6 +26,7 @@ export default function TrainingPage() {
     queryKey: ["unread"],
     queryFn: () => expressionsApi.getUnread(offset),
     enabled: !isDemo,
+    staleTime: 0,
   });
 
   const { data: labelsReal } = useQuery({
@@ -43,10 +44,16 @@ export default function TrainingPage() {
   const labels = isDemo ? labelsDemo : labelsReal;
   const isLoading = isDemo ? loadingDemo : loadingReal;
 
+  // Only show labels that have at least one unread expression
+  const activeLabels = (labels ?? []).filter((l: Label) =>
+    rawList?.some((e) => e.labelid === l.id),
+  );
+
   const setTrainingPhrase = useMobileNavStore((s) => s.setTrainingPhrase);
 
   const [list, setList] = useState<Expression[]>([]);
   const [initialCount, setInitialCount] = useState(0);
+  const [trainedIds, setTrainedIds] = useState<Set<number>>(new Set());
 
   const [index, setIndex] = useState(0);
   const [flipped, setFlipped] = useState(false);
@@ -76,10 +83,10 @@ export default function TrainingPage() {
 
   useEffect(() => {
     if (!rawList) return;
-    const filtered = labelFilter ? rawList.filter((e) => e.labelid === labelFilter) : rawList;
-    const exprs = filtered.map((e) => new Expression(e));
+    const preFilter = labelFilter ? rawList.filter((e) => e.labelid === labelFilter) : rawList;
+    const exprs = preFilter.filter((e) => !trainedIds.has(e.id)).map((e) => new Expression(e));
+    setInitialCount(preFilter.length);
     setList(exprs);
-    setInitialCount(exprs.length);
     setIndex(0);
     setFlipped(false);
   }, [rawList, labelFilter]);
@@ -94,6 +101,7 @@ export default function TrainingPage() {
     mutationFn: (data: import("../../shared/types").ExpressionUpdate) => expressionsApi.update(data),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["expressions"] });
+      qc.invalidateQueries({ queryKey: ["unread"] });
     },
   });
 
@@ -109,6 +117,7 @@ export default function TrainingPage() {
       updateMutation.mutate(updates);
     }
 
+    setTrainedIds((prev) => new Set([...prev, current.id]));
     setList((prev) => prev.filter((_, i) => i !== index));
     setIndex((prev) => Math.min(prev, list.length - 2));
     setFlipped(false);
@@ -117,6 +126,10 @@ export default function TrainingPage() {
 
   // hint read count from expression
   const hintCount = current?.hintForReading[2] ?? 0;
+
+  // Unread phrases remaining in other labels (not trained in this session)
+  const remainingTotal = rawList ? rawList.filter((e) => !trainedIds.has(e.id)).length : 0;
+  const hasMoreWithOtherLabels = labelFilter !== null && remainingTotal > 0;
 
   if (isLoading) {
     return (
@@ -132,11 +145,20 @@ export default function TrainingPage() {
         <div className="text-6xl">🎉</div>
         <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">All done for today!</h2>
         <p className="text-gray-500 dark:text-gray-400 text-center">
-          You have read all your expressions for today. Come back tomorrow!
+          {hasMoreWithOtherLabels
+            ? `You've finished this label. You still have ${remainingTotal} expression${remainingTotal === 1 ? "" : "s"} to read today!`
+            : "You have read all your expressions for today. Come back tomorrow!"}
         </p>
+        {hasMoreWithOtherLabels && (
+          <button
+            onClick={() => setLabelFilter(null)}
+            className="bg-teal-600 hover:bg-teal-700 text-white px-6 py-2 rounded-md transition-colors">
+            Continue training · {remainingTotal} left
+          </button>
+        )}
         <button
           onClick={() => navigate("/expressions")}
-          className="bg-teal-600 hover:bg-teal-700 text-white px-6 py-2 rounded-md transition-colors">
+          className={hasMoreWithOtherLabels ? "text-sm text-gray-500 dark:text-gray-400 hover:underline" : "bg-teal-600 hover:bg-teal-700 text-white px-6 py-2 rounded-md transition-colors"}>
           Go to Expressions
         </button>
       </div>
@@ -152,11 +174,11 @@ export default function TrainingPage() {
         {/* Mobile header */}
         <div className="sm:hidden">
           <div className="flex items-center justify-between gap-3">
-            {labels && labels.length > 0 ? (
+            {activeLabels.length > 0 ? (
               <PillSelect
                 value={labelFilter?.toString() ?? ""}
                 onChange={(v) => setLabelFilter(v ? Number(v) : null)}
-                options={labels.map((l: Label) => ({ value: String(l.id), label: l.name }))}
+                options={activeLabels.map((l: Label) => ({ value: String(l.id), label: l.name }))}
                 placeholder="All labels"
               />
             ) : (
@@ -217,11 +239,11 @@ export default function TrainingPage() {
               </svg>
               Home
             </button>
-            {labels && labels.length > 0 && (
+            {activeLabels.length > 0 && (
               <PillSelect
                 value={labelFilter?.toString() ?? ""}
                 onChange={(v) => setLabelFilter(v ? Number(v) : null)}
-                options={labels.map((l: Label) => ({ value: String(l.id), label: l.name }))}
+                options={activeLabels.map((l: Label) => ({ value: String(l.id), label: l.name }))}
                 placeholder="All labels"
                 size="md"
               />
@@ -242,21 +264,36 @@ export default function TrainingPage() {
       </div>
 
       {/* Settings panel — desktop only */}
-      <div className="bg-gray-50 dark:bg-slate-800/80 border-b border-gray-200 dark:border-slate-700 px-4 py-2 flex-wrap justify-between items-center gap-4 hidden sm:flex">
-        <label className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 cursor-pointer">
-          <input
-            type="checkbox"
-            checked={showCountBtns}
-            onChange={(e) => {
-              setShowCountBtns(e.target.checked);
-              import("../../shared/utils/settings").then(({ setSettings }) =>
-                setSettings("showCountBtns", e.target.checked),
-              );
-            }}
-            className="rounded border-gray-300 accent-teal-600 dark:accent-teal-400"
-          />
-          Counter
-        </label>
+      <div className="bg-gray-50 dark:bg-slate-800/80 border-b border-gray-200 dark:border-slate-700 px-4 py-2 flex-col gap-2 hidden sm:flex">
+        <div className="flex items-center justify-between gap-4">
+          <label className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={showCountBtns}
+              onChange={(e) => {
+                setShowCountBtns(e.target.checked);
+                import("../../shared/utils/settings").then(({ setSettings }) =>
+                  setSettings("showCountBtns", e.target.checked),
+                );
+              }}
+              className="rounded border-gray-300 accent-teal-600 dark:accent-teal-400"
+            />
+            Counter
+          </label>
+          {initialCount > 0 && (
+            <span className="text-xs text-gray-400 dark:text-gray-500">
+              {initialCount - list.length} / {initialCount}
+            </span>
+          )}
+        </div>
+        {initialCount > 0 && (
+          <div className="h-1 bg-gray-200 dark:bg-slate-700 rounded-full overflow-hidden">
+            <div
+              className="h-full bg-teal-500 rounded-full transition-all duration-300"
+              style={{ width: `${Math.round(((initialCount - list.length) / initialCount) * 100)}%` }}
+            />
+          </div>
+        )}
       </div>
 
       {/* Main content */}

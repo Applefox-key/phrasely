@@ -1,27 +1,27 @@
-import { useEffect } from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import { useAuthStore } from './features/auth/authStore';
-import { usersApi } from './features/auth/usersApi';
-import { useQuery } from '@tanstack/react-query';
-import ProtectedRoute from './shared/components/ProtectedRoute';
-import Navbar from './shared/components/Navbar';
-import MobileBottomNav from './shared/components/MobileBottomNav';
-import DemoBanner from './shared/components/DemoBanner';
-import LoginPage from './features/auth/LoginPage';
-import RegisterPage from './features/auth/RegisterPage';
-import ResetPasswordPage from './features/auth/ResetPasswordPage';
-import TrainingPage from './features/expressions/TrainingPage';
-import ExpressionsPage from './features/expressions/ExpressionsPage';
-import ProfilePage from './features/profile/ProfilePage';
-import AboutPage from './features/about/AboutPage';
-import RootRedirect from './features/auth/RootRedirect';
+import { useEffect } from "react";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { useAuthStore } from "./features/auth/authStore";
+import { usersApi } from "./features/auth/usersApi";
+import { useQuery } from "@tanstack/react-query";
+import ProtectedRoute from "./shared/components/ProtectedRoute";
+import Navbar from "./shared/components/Navbar";
+import MobileBottomNav from "./shared/components/MobileBottomNav";
+import DemoBanner from "./shared/components/DemoBanner";
+import LoginPage from "./features/auth/LoginPage";
+import RegisterPage from "./features/auth/RegisterPage";
+import ResetPasswordPage from "./features/auth/ResetPasswordPage";
+import TrainingPage from "./features/expressions/TrainingPage";
+import ExpressionsPage from "./features/expressions/ExpressionsPage";
+import ProfilePage from "./features/profile/ProfilePage";
+import AboutPage from "./features/about/AboutPage";
+import RootRedirect from "./features/auth/RootRedirect";
 
 export default function App() {
   const { setUser, setInitializing, isInitializing, isDemo, clearAuth } = useAuthStore();
 
   // Skip the session check entirely in demo mode — demo user is already set
   const { data: user, isError } = useQuery({
-    queryKey: ['currentUser'],
+    queryKey: ["currentUser"],
     queryFn: () => usersApi.getMe(),
     retry: false,
     enabled: !isDemo,
@@ -49,7 +49,7 @@ export default function App() {
 
   return (
     <BrowserRouter>
-      <div className="min-h-screen bg-gray-50 dark:bg-slate-900 text-gray-900 dark:text-gray-100 pb-16 sm:pb-0">
+      <div className="min-h-screen max-w-7xl m-auto bg-gray-50 dark:bg-slate-900 text-gray-900 dark:text-gray-100 pb-16 sm:pb-0">
         <Navbar />
         <DemoBanner />
         <MobileBottomNav />

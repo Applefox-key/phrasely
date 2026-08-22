@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { expressionsFromText } from "../texts";
 import type { Label } from "../../../shared/types";
+import PillSelect from "../../../shared/components/PillSelect";
 
 interface ParsedItem {
   id: number;
@@ -113,17 +114,14 @@ export default function AddFromTextModal({ labels, onSave, onClose, mode = "text
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Assign label</label>
-                <select
-                  value={selectedLabel ?? ""}
-                  onChange={(e) => setSelectedLabel(e.target.value ? Number(e.target.value) : null)}
-                  className="w-full max-w-xs px-3 py-2 border border-gray-200 dark:border-slate-600 rounded-md bg-white dark:bg-slate-700 text-gray-900 dark:text-gray-100 text-sm">
-                  <option value="">No label</option>
-                  {labels.map((l) => (
-                    <option key={l.id} value={l.id}>
-                      {l.name}
-                    </option>
-                  ))}
-                </select>
+                <PillSelect
+                  value={selectedLabel?.toString() ?? ""}
+                  onChange={(v) => setSelectedLabel(v ? Number(v) : null)}
+                  options={labels.map((l) => ({ value: l.id.toString(), label: l.name }))}
+                  placeholder="No label"
+                  colorScheme="amber"
+                  size="md"
+                />
               </div>
 
               <button

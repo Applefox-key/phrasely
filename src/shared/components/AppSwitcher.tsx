@@ -8,7 +8,7 @@ const apps = [
     current: false,
   },
   {
-    name: "Phrasely",
+    name: "SayLoop",
     url: null,
     icon: "💬",
     current: true,

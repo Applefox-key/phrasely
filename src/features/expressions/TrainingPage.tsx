@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback, useRef } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { expressionsApi } from "./expressionsApi";
@@ -11,6 +11,8 @@ import { useAuthStore } from "../auth/authStore";
 import { useDemoStore } from "../demo/demoStore";
 import { useDemoUnread, useDemoLabels } from "../demo/useDemoExpressions";
 import { SpeakButton } from "../../shared/components/SpeakButton";
+import PillSelect from "../../shared/components/PillSelect";
+import { useMobileNavStore } from "../../shared/mobileNavStore";
 
 export default function TrainingPage() {
   const navigate = useNavigate();
@@ -41,26 +43,52 @@ export default function TrainingPage() {
   const labels = isDemo ? labelsDemo : labelsReal;
   const isLoading = isDemo ? loadingDemo : loadingReal;
 
+  const setTrainingPhrase = useMobileNavStore((s) => s.setTrainingPhrase);
+
   const [list, setList] = useState<Expression[]>([]);
+  const [initialCount, setInitialCount] = useState(0);
 
   const [index, setIndex] = useState(0);
   const [flipped, setFlipped] = useState(false);
   const [labelFilter, setLabelFilter] = useState<number | null>(null);
   const [showCountBtns, setShowCountBtns] = useState(() => getSettings<boolean>("showCountBtns", true) ?? true);
-  const [showSettings, setShowSettings] = useState(false);
   const [readCount, setReadCount] = useState(0);
   const [celebrated, setCelebrated] = useState(false);
+  const [animPhase, setAnimPhase] = useState<"idle" | "out" | "in">("idle");
+  const [animDir, setAnimDir] = useState<1 | -1>(1);
+
+  const animating = animPhase !== "idle";
+
+  const triggerWithAnim = (action: () => void, dir: 1 | -1 = 1) => {
+    setAnimDir(dir);
+    setAnimPhase("out");
+    setTimeout(() => {
+      action();
+      setAnimPhase("in");
+    }, 220);
+  };
+
+  useEffect(() => {
+    if (animPhase !== "in") return;
+    const id = requestAnimationFrame(() => requestAnimationFrame(() => setAnimPhase("idle")));
+    return () => cancelAnimationFrame(id);
+  }, [animPhase]);
 
   useEffect(() => {
     if (!rawList) return;
     const filtered = labelFilter ? rawList.filter((e) => e.labelid === labelFilter) : rawList;
     const exprs = filtered.map((e) => new Expression(e));
     setList(exprs);
+    setInitialCount(exprs.length);
     setIndex(0);
     setFlipped(false);
   }, [rawList, labelFilter]);
 
   const current = list[index] ?? null;
+
+  useEffect(() => {
+    setTrainingPhrase(current?.phrase ?? "");
+  }, [current?.phrase, setTrainingPhrase]);
 
   const updateMutation = useMutation({
     mutationFn: (data: import("../../shared/types").ExpressionUpdate) => expressionsApi.update(data),
@@ -118,57 +146,103 @@ export default function TrainingPage() {
   const hint = current?.hintForReading;
 
   return (
-    <div className="flex flex-col h-[calc(100vh-3.5rem)] ">
+    <div className="flex flex-col h-[calc(100vh-7.5rem)] ">
       {/* Header */}
-      <div className="bg-white dark:bg-slate-800 border-b border-gray-200 dark:border-slate-700 px-4 py-3 flex items-center justify-between gap-4 flex-wrap ">
-        {labels && labels.length > 0 && (
-          <select
-            value={labelFilter ?? ""}
-            onChange={(e) => setLabelFilter(e.target.value ? Number(e.target.value) : null)}
-            className="text-sm border border-gray-200 dark:border-slate-600 rounded-md px-2 py-1 bg-white dark:bg-slate-700 text-gray-700 dark:text-gray-300">
-            <option value="">All labels</option>
-            {labels.map((l: Label) => (
-              <option key={l.id} value={l.id}>
-                {l.name}
-              </option>
-            ))}
-          </select>
-        )}
+      <div className="bg-white dark:bg-slate-800 border-b border-gray-200 dark:border-slate-700 px-4 py-3">
+        {/* Mobile header */}
+        <div className="sm:hidden">
+          <div className="flex items-center justify-between gap-3">
+            {labels && labels.length > 0 ? (
+              <PillSelect
+                value={labelFilter?.toString() ?? ""}
+                onChange={(v) => setLabelFilter(v ? Number(v) : null)}
+                options={labels.map((l: Label) => ({ value: String(l.id), label: l.name }))}
+                placeholder="All labels"
+              />
+            ) : (
+              <div />
+            )}
 
-        <div className="flex items-center gap-2">
-          <span className="text-sm font-medium text-gray-500 dark:text-gray-400">
-            <span className="sm:hidden">LEFT:</span>
-            <span className="hidden sm:inline">LEFT TO READ:</span>
-          </span>
-          <span className="font-bold text-teal-600 dark:text-teal-400 text-lg">{list.length}</span>
+            <div className="flex items-center gap-1.5">
+              <span className="text-sm font-medium text-gray-500 dark:text-gray-400">LEFT:</span>
+              <span className="font-bold text-teal-600 dark:text-teal-400 text-lg">{list.length}</span>
+            </div>
+            <label className="flex items-center gap-1.5 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={showCountBtns}
+                onChange={(e) => {
+                  setShowCountBtns(e.target.checked);
+                  import("../../shared/utils/settings").then(({ setSettings }) =>
+                    setSettings("showCountBtns", e.target.checked),
+                  );
+                }}
+                className="rounded border-gray-300 accent-teal-600 dark:accent-teal-400"
+              />
+              <span className="text-xs text-gray-500 dark:text-gray-400">Counter</span>
+            </label>
+          </div>
+          {initialCount > 0 && (
+            <div className="mt-2">
+              <div className="h-1 bg-gray-100 dark:bg-slate-700 rounded-full overflow-hidden">
+                <div
+                  className="h-full bg-teal-500 rounded-full transition-all duration-300"
+                  style={{ width: `${Math.round(((initialCount - list.length) / initialCount) * 100)}%` }}
+                />
+              </div>
+              <div className="text-right text-[10px] text-gray-400 dark:text-gray-500 mt-0.5">
+                {initialCount - list.length} / {initialCount}
+              </div>
+            </div>
+          )}
         </div>
 
-        <div className="flex items-center gap-1">
-          <SpeakButton text={current?.phrase ?? ""} />
+        {/* Desktop header — 3 columns */}
+        <div className="hidden sm:grid sm:grid-cols-3 sm:items-center gap-4">
+          {/* Left: Home button + label selector */}
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => navigate("/expressions")}
+              className="flex items-center gap-1.5 px-4 py-2 rounded-md border border-gray-200 dark:border-slate-600 text-sm text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors">
+              <svg
+                viewBox="0 0 24 24"
+                width="16"
+                height="16"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round">
+                <path d="M15 18l-6-6 6-6" />
+              </svg>
+              Home
+            </button>
+            {labels && labels.length > 0 && (
+              <PillSelect
+                value={labelFilter?.toString() ?? ""}
+                onChange={(v) => setLabelFilter(v ? Number(v) : null)}
+                options={labels.map((l: Label) => ({ value: String(l.id), label: l.name }))}
+                placeholder="All labels"
+                size="md"
+              />
+            )}
+          </div>
 
-          <button
-            onClick={() => setShowSettings((v) => !v)}
-            className={`sm:hidden p-1.5 rounded-md transition-colors ${showSettings ? "bg-teal-50 dark:bg-teal-900/30 text-teal-600 dark:text-teal-400" : "text-gray-400 dark:text-gray-500 hover:text-gray-600 hover:dark:text-gray-300"}`}
-            title="Settings">
-            <svg
-              viewBox="0 0 24 24"
-              width="18"
-              height="18"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.75"
-              strokeLinecap="round"
-              strokeLinejoin="round">
-              <circle cx="12" cy="12" r="3" />
-              <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
-            </svg>
-          </button>
+          {/* Center: LEFT TO READ */}
+          <div className="flex items-center justify-center gap-2">
+            <span className="text-sm font-medium text-gray-500 dark:text-gray-400">LEFT TO READ:</span>
+            <span className="font-bold text-teal-600 dark:text-teal-400 text-lg">{list.length}</span>
+          </div>
+
+          {/* Right: SpeakButton */}
+          <div className="flex items-center justify-end">
+            <SpeakButton text={current?.phrase ?? ""} size="md" />
+          </div>
         </div>
       </div>
 
-      {/* Settings panel — always visible on desktop, toggled on mobile */}
-      <div
-        className={`bg-gray-50 dark:bg-slate-800/80 border-b border-gray-200 dark:border-slate-700 px-4 py-2 flex-wrap justify-between items-center gap-4 ${showSettings ? "flex" : "hidden sm:flex"}`}>
+      {/* Settings panel — desktop only */}
+      <div className="bg-gray-50 dark:bg-slate-800/80 border-b border-gray-200 dark:border-slate-700 px-4 py-2 flex-wrap justify-between items-center gap-4 hidden sm:flex">
         <label className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 cursor-pointer">
           <input
             type="checkbox"
@@ -179,19 +253,32 @@ export default function TrainingPage() {
                 setSettings("showCountBtns", e.target.checked),
               );
             }}
-            className="rounded border-gray-300"
+            className="rounded border-gray-300 accent-teal-600 dark:accent-teal-400"
           />
           Counter
         </label>
       </div>
 
       {/* Main content */}
-      <div className="flex-1 flex flex-col items-center justify-start overflow-y-auto px-4 py-3 sm:py-8 gap-3 sm:gap-6 pb-20 sm:pb-8">
+      <div className="flex-1 flex flex-col items-center justify-center sm:justify-start overflow-y-auto px-4 py-3 sm:py-8 gap-3 sm:gap-6 pb-20 sm:pb-8">
         {/* Card */}
         <div
           className="w-full max-w-2xl cursor-pointer"
-          style={{ perspective: "1000px", height: "clamp(180px, 40vh, 300px)" }}
-          onClick={() => setFlipped((v) => !v)}>
+          style={{
+            perspective: "1000px",
+            height: "clamp(240px, 46vh, 380px)",
+            opacity: animPhase === "idle" ? 1 : 0,
+            transform:
+              animPhase === "idle"
+                ? "translateX(0)"
+                : animPhase === "out"
+                  ? `translateX(${-animDir * 2}rem)`
+                  : `translateX(${animDir * 2}rem)`,
+            transition: animPhase === "in" ? "none" : "opacity 0.22s ease, transform 0.22s ease",
+          }}
+          onClick={() => {
+            if (!animating) setFlipped((v) => !v);
+          }}>
           <div
             className="relative w-full h-full"
             style={{
@@ -204,10 +291,7 @@ export default function TrainingPage() {
             <div
               className="absolute inset-0 bg-white dark:bg-slate-800 rounded-lg border border-gray-200 dark:border-slate-700 shadow-sm p-4 sm:p-8 flex flex-col justify-center"
               style={{ backfaceVisibility: "hidden", WebkitBackfaceVisibility: "hidden" }}>
-              <p className="text-sm text-gray-400 dark:text-gray-500 mb-3 text-center">
-                {index + 1} / {list.length}
-              </p>
-              <div className="text-xl text-gray-900 dark:text-gray-100 text-center leading-relaxed select-none">
+              <div className="text-2xl text-gray-900 dark:text-gray-100 text-center leading-relaxed select-none">
                 {current &&
                   addSpanToExpInPrase(
                     { expression: current.expression, phrase: current.phrase, note: current.note },
@@ -304,48 +388,58 @@ export default function TrainingPage() {
           </div>
         )}
 
-        {/* Draggable read counter */}
-        {showCountBtns && hintCount > 0 && (
-          <CountBtns total={hintCount} count={readCount} setCount={setReadCount} onComplete={markAsRead} />
-        )}
-
         {/* Navigation buttons */}
-        <div className="fixed bottom-0 left-0 right-0 z-30 sm:static sm:w-full sm:max-w-2xl bg-white dark:bg-slate-800 sm:bg-transparent border-t border-gray-200 dark:border-slate-700 sm:border-0 px-4 py-3 sm:p-0">
-          <div className="w-full max-w-2xl mx-auto sm:max-w-none flex items-center justify-between gap-3">
-            <button
-              onClick={() => {
-                setIndex((v) => v - 1);
-                setFlipped(false);
-                setReadCount(0);
-              }}
-              disabled={index === 0}
-              className="flex px-6 py-3 sm:py-2 border border-gray-200 dark:border-slate-600 rounded-md text-base sm:text-sm font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-50 hover:dark:bg-slate-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors">
-              <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
-                <path d="M11 5L2 12l9 7v-4h11V9H11V5z"></path>
-              </svg>
-              <span className="hidden sm:inline"> PREV</span>
-            </button>
+        <div className="fixed bottom-0 left-0 right-0 z-30 sm:static sm:w-full sm:max-w-2xl bg-white dark:bg-slate-800 sm:bg-transparent border-t border-gray-200 dark:border-slate-700 sm:border-0 sm:p-0">
+          <div className="px-4 py-3 sm:p-0">
+            <div className="w-full max-w-2xl mx-auto sm:max-w-none flex items-center justify-between gap-3">
+              <button
+                onClick={() =>
+                  triggerWithAnim(() => {
+                    setIndex((v) => v - 1);
+                    setFlipped(false);
+                    setReadCount(0);
+                  }, -1)
+                }
+                disabled={index === 0 || animating}
+                className="flex px-6 py-3 sm:py-2 border border-gray-200 dark:border-slate-600 rounded-md text-base sm:text-sm font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-50 hover:dark:bg-slate-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors">
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
+                  <path d="M11 5L2 12l9 7v-4h11V9H11V5z"></path>
+                </svg>
+                <span className="hidden sm:inline"> PREV</span>
+              </button>
 
-            <button
-              onClick={markAsRead}
-              disabled={updateMutation.isPending}
-              className="flex-1 bg-teal-600 hover:bg-teal-700 disabled:opacity-60 text-white font-semibold py-2 px-0 text-base sm:text-sm rounded-md transition-colors">
-              DONE ✓
-            </button>
+              <button
+                onClick={() => {
+                  if (animating) return;
+                  if (showCountBtns && hintCount > 0 && readCount < hintCount) {
+                    const next = readCount + 1;
+                    setReadCount(next);
+                    if (next >= hintCount) triggerWithAnim(markAsRead, 1);
+                  } else {
+                    triggerWithAnim(markAsRead, 1);
+                  }
+                }}
+                disabled={updateMutation.isPending || animating}
+                className="flex-1 bg-teal-600 hover:bg-teal-700 disabled:opacity-60 text-white font-semibold py-2 px-0 text-base sm:text-sm rounded-md transition-colors">
+                {showCountBtns && hintCount > 0 && readCount < hintCount ? `READ · ${hintCount - readCount}` : "DONE ✓"}
+              </button>
 
-            <button
-              onClick={() => {
-                setIndex((v) => v + 1);
-                setFlipped(false);
-                setReadCount(0);
-              }}
-              disabled={index >= list.length - 1}
-              className="flex px-6 py-3 sm:py-2 border border-gray-200 dark:border-slate-600 rounded-md text-base sm:text-sm font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-50 hover:dark:bg-slate-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors">
-              <span className="hidden sm:inline">NEXT </span>{" "}
-              <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" className="scale-x-[-1]">
-                <path d="M11 5L2 12l9 7v-4h11V9H11V5z"></path>
-              </svg>
-            </button>
+              <button
+                onClick={() =>
+                  triggerWithAnim(() => {
+                    setIndex((v) => v + 1);
+                    setFlipped(false);
+                    setReadCount(0);
+                  }, 1)
+                }
+                disabled={index >= list.length - 1 || animating}
+                className="flex px-6 py-3 sm:py-2 border border-gray-200 dark:border-slate-600 rounded-md text-base sm:text-sm font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-50 hover:dark:bg-slate-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors">
+                <span className="hidden sm:inline">NEXT </span>{" "}
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" className="scale-x-[-1]">
+                  <path d="M11 5L2 12l9 7v-4h11V9H11V5z"></path>
+                </svg>
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -394,65 +488,6 @@ function StudyPlanView({ plan }: { plan: string[] }) {
           </div>
         );
       })}
-    </div>
-  );
-}
-
-function CountBtns({
-  total,
-  count,
-  setCount,
-  onComplete,
-}: {
-  total: number;
-  count: number;
-  setCount: (n: number) => void;
-  onComplete: () => void;
-}) {
-  const [pos, setPos] = useState({ x: 0, y: 0 });
-  const [dragging, setDragging] = useState(false);
-  const dragStart = useRef({ mx: 0, my: 0, px: 0, py: 0 });
-
-  const handleMouseDown = (e: React.MouseEvent) => {
-    setDragging(true);
-    dragStart.current = { mx: e.clientX, my: e.clientY, px: pos.x, py: pos.y };
-  };
-
-  const handleMouseMove = (e: React.MouseEvent) => {
-    if (!dragging) return;
-    setPos({
-      x: dragStart.current.px + e.clientX - dragStart.current.mx,
-      y: dragStart.current.py + e.clientY - dragStart.current.my,
-    });
-  };
-
-  const handleMouseUp = () => setDragging(false);
-
-  const decrement = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    const next = count + 1;
-    setCount(next);
-    if (next >= total) onComplete();
-  };
-
-  const remaining = total - count;
-
-  return (
-    <div
-      className="fixed bottom-20 right-6 z-30 bg-white dark:bg-slate-800 rounded-xl shadow-md border border-gray-200 dark:border-slate-700 px-5 py-4 cursor-move select-none"
-      style={{ transform: `translate(${pos.x}px, ${pos.y}px)` }}
-      onMouseDown={handleMouseDown}
-      onMouseMove={handleMouseMove}
-      onMouseUp={handleMouseUp}
-      onMouseLeave={handleMouseUp}>
-      <div className="text-3xl font-bold text-teal-600 dark:text-teal-400 text-center">{remaining}</div>
-      <button
-        onMouseDown={(e) => e.stopPropagation()}
-        onClick={decrement}
-        disabled={remaining <= 0}
-        className="mt-2 w-12 h-12 rounded-full bg-teal-600 hover:bg-teal-700 disabled:opacity-40 text-white text-xl flex items-center justify-center mx-auto transition-colors">
-        −
-      </button>
     </div>
   );
 }

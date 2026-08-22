@@ -1,6 +1,7 @@
 import { Expression } from "../Expression";
 import type { Label } from "../../../shared/types";
 import { addSpanToExpInPrase } from "../texts";
+import PillSelect from "../../../shared/components/PillSelect";
 
 interface Props {
   expression: Expression;
@@ -44,23 +45,24 @@ export default function ExpressionRow({
 
   return (
     <div
-      className={`border-l border-l-teal-500 flex items-center gap-3 px-3 py-2.5 border-b border-gray-100 dark:border-slate-700 hover:bg-gray-300 dark:border-l-teal-500  text-gray-200 transition-colors hover:dark:bg-slate-700 group ${
-        selected ? "bg-teal-50 dark:bg-teal-900/20" : ""
-      }`}>
+      className={`border-l border-l-teal-500 flex items-center gap-3 px-3 py-2.5 border-b border-gray-100 dark:border-slate-700 hover:bg-gray-300 dark:border-l-teal-500  text-gray-200 transition-colors hover:dark:bg-slate-700 group cursor-pointer ${
+        selected ? "bg-teal-100 dark:bg-teal-900/50" : ""
+      }`}
+      onClick={selectMode ? onToggleSelect : onClick}>
       {/* Checkbox (select mode) */}
       {selectMode && (
         <input
           type="checkbox"
           checked={selected}
           onChange={onToggleSelect}
-          className="rounded border-gray-300 text-teal-600"
+          className="rounded border-gray-300 accent-teal-600 dark:accent-teal-400"
           onClick={(e) => e.stopPropagation()}
         />
       )}
       {/* Phrase */}
-      <div className="flex-1 min-w-0 cursor-pointer" onClick={onClick}>
+      <div className="flex-1 min-w-0">
         <p className="text-sm text-gray-800 dark:text-gray-200 truncate">
-          {addSpanToExpInPrase({ expression: expression.expression, phrase: expression.phrase, note: expression.note })}
+          {addSpanToExpInPrase({ expression: expression.expression, phrase: expression.phrase, note: expression.note }, undefined, true)}
         </p>
       </div>
       {/* inQueue icon */}
@@ -109,21 +111,16 @@ export default function ExpressionRow({
         {expression.status}
       </span> */}
       {/* Label quick-assign */}
-      <select
-        value={expression.labelid ?? ""}
-        onChange={(e) => {
-          e.stopPropagation();
-          onLabelChange(e.target.value ? Number(e.target.value) : null);
-        }}
-        onClick={(e) => e.stopPropagation()}
-        className="hidden sm:block text-xs border border-gray-200 dark:border-slate-600 rounded px-1 py-0.5 bg-white dark:bg-slate-700 text-gray-600 dark:text-gray-300 max-w-[90px] truncate">
-        <option value="">No label</option>
-        {labels.map((l) => (
-          <option key={l.id} value={l.id}>
-            {l.name}
-          </option>
-        ))}
-      </select>
+      <div className="hidden sm:block" onClick={(e) => e.stopPropagation()}>
+        <PillSelect
+          value={String(expression.labelid ?? "")}
+          onChange={(v) => onLabelChange(v ? Number(v) : null)}
+          placeholder="No label"
+          colorScheme="violet"
+          maxWidth="max-w-[90px] min-w-[90px]"
+          options={labels.map((l) => ({ value: String(l.id), label: l.name }))}
+        />
+      </div>
       {/* Delete */}
       <button
         onClick={(e) => {

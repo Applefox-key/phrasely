@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
+import { useAuthStore } from "../auth/authStore";
 
 interface AboutCard {
   id: number;
@@ -71,6 +72,7 @@ const shortInstructions = [
 
 export default function AboutPage() {
   const [openId, setOpenId] = useState<number | null>(1);
+  const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
 
   const toggle = (id: number) => setOpenId((prev) => (prev === id ? null : id));
 
@@ -79,7 +81,8 @@ export default function AboutPage() {
       {/* Hero */}
       <div className="mb-8 text-center">
         <div className="text-5xl mb-3">💬</div>
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-2">Learn More</h1>
+        <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-1">SayLoop</h1>
+        <p className="text-sm text-teal-600 dark:text-teal-400 font-medium tracking-wide mb-3">Say → repeat → remember</p>
         <p className="text-gray-500 dark:text-gray-400">
           about the <strong>90 seconds method</strong> — or{" "}
           <a href="https://flashcards.learnypie.com" className="text-teal-600 dark:text-teal-400 hover:underline">
@@ -168,11 +171,19 @@ export default function AboutPage() {
 
       {/* CTA */}
       <div className="text-center space-y-3">
-        <Link
-          to="/register"
-          className="inline-block bg-teal-600 hover:bg-teal-700 text-white font-medium px-8 py-2.5 rounded-md transition-colors">
-          Get started for free
-        </Link>
+        {isAuthenticated ? (
+          <Link
+            to="/"
+            className="inline-block bg-teal-600 hover:bg-teal-700 text-white font-medium px-8 py-2.5 rounded-md transition-colors">
+            Continue training
+          </Link>
+        ) : (
+          <Link
+            to="/register"
+            className="inline-block bg-teal-600 hover:bg-teal-700 text-white font-medium px-8 py-2.5 rounded-md transition-colors">
+            Get started for free
+          </Link>
+        )}
         <p className="text-xs text-gray-400 dark:text-gray-500">
           Other learnypie.com projects:{" "}
           <a href="https://flashcards.learnypie.com" className="hover:text-teal-600 hover:dark:text-teal-400 underline">

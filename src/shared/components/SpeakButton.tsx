@@ -23,7 +23,12 @@ export function SpeakButton({ text, className = "", size = "sm" }: Props) {
     setLang(speechLangs[0] ?? "");
   }, [speechLangs.join(",")]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  useEffect(() => () => { window.speechSynthesis?.cancel(); }, []);
+  useEffect(
+    () => () => {
+      window.speechSynthesis?.cancel();
+    },
+    [],
+  );
 
   if (!supported) return null;
 
@@ -47,14 +52,18 @@ export function SpeakButton({ text, className = "", size = "sm" }: Props) {
 
   function handleLang(e: React.MouseEvent, code: LangCode) {
     e.stopPropagation();
-    if (speaking) { window.speechSynthesis.cancel(); setSpeaking(false); }
+    if (speaking) {
+      window.speechSynthesis.cancel();
+      setSpeaking(false);
+    }
     setLang(code);
   }
 
   const isMd = size === "md";
 
   return (
-    <div className={`inline-flex items-center rounded-full border border-gray-200 dark:border-slate-600 bg-white dark:bg-slate-700 overflow-hidden ${className}`}>
+    <div
+      className={`inline-flex items-center rounded-full border border-gray-200 dark:border-slate-600 bg-white dark:bg-slate-700 overflow-hidden ${className}`}>
       {langs.map(({ code, label }, i) => (
         <button
           key={label}
@@ -65,17 +74,14 @@ export function SpeakButton({ text, className = "", size = "sm" }: Props) {
             i > 0 ? "border-l border-gray-200 dark:border-slate-600" : ""
           } ${
             lang === code
-              ? "text-teal-600 dark:text-teal-300"
+              ? "text-teal-600 dark:text-teal-300 self-stretch shadow-inset-neu dark:shadow-inset-neu-night"
               : "text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300"
-          }`}
-        >
+          }`}>
           {label}
         </button>
       ))}
 
-      {langs.length > 0 && (
-        <div className="w-px self-stretch bg-gray-200 dark:bg-slate-600" />
-      )}
+      {langs.length > 0 && <div className="w-px self-stretch bg-gray-200 dark:bg-slate-600" />}
 
       <button
         type="button"
@@ -85,8 +91,7 @@ export function SpeakButton({ text, className = "", size = "sm" }: Props) {
           speaking
             ? "text-teal-600 dark:text-teal-300 bg-teal-50 dark:bg-teal-900/30"
             : "text-gray-400 hover:text-teal-500 dark:hover:text-teal-400 hover:bg-gray-50 dark:hover:bg-slate-600"
-        }`}
-      >
+        }`}>
         {speaking ? (
           <svg width={isMd ? 16 : 12} height={isMd ? 16 : 12} viewBox="0 0 24 24" fill="currentColor">
             <rect x="6" y="6" width="12" height="12" rx="1.5" />

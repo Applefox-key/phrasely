@@ -47,7 +47,12 @@ export function VoiceInputButton({ onResult, className = "" }: Props) {
     setLang(speechLangs[0] ?? "");
   }, [speechLangs.join(",")]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  useEffect(() => () => { recognitionRef.current?.stop(); }, []);
+  useEffect(
+    () => () => {
+      recognitionRef.current?.stop();
+    },
+    [],
+  );
 
   if (!supported) return null;
 
@@ -83,7 +88,8 @@ export function VoiceInputButton({ onResult, className = "" }: Props) {
 
   function handleMicClick(e: React.MouseEvent) {
     e.stopPropagation();
-    if (recording) stop(); else start();
+    if (recording) stop();
+    else start();
   }
 
   function handleLangClick(e: React.MouseEvent, code: LangCode) {
@@ -93,7 +99,8 @@ export function VoiceInputButton({ onResult, className = "" }: Props) {
   }
 
   return (
-    <div className={`inline-flex items-center rounded-full border border-gray-200 dark:border-slate-600 bg-white dark:bg-slate-700 overflow-hidden ${className}`}>
+    <div
+      className={`inline-flex items-center rounded-full border border-gray-200 dark:border-slate-600 bg-white dark:bg-slate-700 overflow-hidden ${className}`}>
       {langs.map(({ code, label }, i) => (
         <button
           key={label}
@@ -104,17 +111,14 @@ export function VoiceInputButton({ onResult, className = "" }: Props) {
             i > 0 ? "border-l border-gray-200 dark:border-slate-600" : ""
           } ${
             lang === code
-              ? "text-teal-600 dark:text-teal-300"
+              ? "text-teal-600 dark:text-teal-300 shadow-inset-neu self-stretch dark:shadow-inset-neu-night"
               : "text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300"
-          }`}
-        >
+          }`}>
           {label}
         </button>
       ))}
 
-      {langs.length > 0 && (
-        <div className="w-px self-stretch bg-gray-200 dark:bg-slate-600" />
-      )}
+      {langs.length > 0 && <div className="w-px self-stretch bg-gray-200 dark:bg-slate-600" />}
 
       <button
         type="button"
@@ -124,8 +128,7 @@ export function VoiceInputButton({ onResult, className = "" }: Props) {
           recording
             ? "text-red-500 bg-red-50 dark:bg-red-900/20 animate-pulse"
             : "text-gray-400 hover:text-red-500 dark:hover:text-red-400 hover:bg-gray-50 dark:hover:bg-slate-600"
-        }`}
-      >
+        }`}>
         {recording ? (
           <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor">
             <path d="M19 11h-1.7c0 .74-.16 1.43-.43 2.05l1.23 1.23c.56-.98.9-2.09.9-3.28zm-4.02.17c0-.06.02-.11.02-.17V5c0-1.66-1.34-3-3-3S9 3.34 9 5v.18l5.98 5.99zM4.27 3 3 4.27l6.01 6.01V11c0 1.66 1.33 3 2.99 3 .22 0 .44-.03.65-.08l1.66 1.66c-.71.33-1.5.52-2.31.52-2.76 0-5.3-2.1-5.3-5.1H5c0 3.41 2.72 6.23 6 6.72V21h2v-3.28c.91-.13 1.77-.45 2.54-.9L19.73 21 21 19.73 4.27 3z" />

@@ -18,9 +18,7 @@ import PillSelect from "../../shared/components/PillSelect";
 import { useConfirm } from "../../shared/hooks/useConfirm";
 import { useMobileNavStore } from "../../shared/mobileNavStore";
 import { IoGridOutline } from "react-icons/io5";
-import { CiGrid2H } from "react-icons/ci";
 import { PiTreeViewBold } from "react-icons/pi";
-import { VscListTree } from "react-icons/vsc";
 import { LuCopyCheck } from "react-icons/lu";
 
 type Panel = "manage" | null;
@@ -78,10 +76,11 @@ export default function ExpressionsPage() {
   const [activePanel, setActivePanel] = useState<Panel>(null);
   const [desktopTab, setDesktopTab] = useState<"expressions" | "labels">("expressions");
   const [groupByLabel, setGroupByLabel] = useState(false);
+  const [collapsedGroups, setCollapsedGroups] = useState<Set<string>>(new Set());
   const [filterLabel, setFilterLabel] = useState("");
   const [filterStatus, setFilterStatus] = useState("");
   const [filterStage, setFilterStage] = useState("");
-  const [filterInQueue, setFilterInQueue] = useState(false);
+  const [filterInQueue, setFilterInQueue] = useState<"" | "in" | "out">("");
   const filterText = useMobileNavStore((s) => s.filterText);
   const [editTarget, setEditTarget] = useState<Expression | null>(null);
   const [editInitialTab, setEditInitialTab] = useState<"edit" | "info">("edit");
@@ -188,7 +187,8 @@ export default function ExpressionsPage() {
         if (filterLabel && String(e.labelid) !== filterLabel) return false;
         if (filterStatus && e.status !== filterStatus) return false;
         if (filterStage !== "" && String(e.stage) !== filterStage) return false;
-        if (filterInQueue && !e.inQueue) return false;
+        if (filterInQueue === "in" && !e.inQueue) return false;
+        if (filterInQueue === "out" && e.inQueue) return false;
         if (filterText) {
           const q = filterText.toLowerCase();
           if (!e.phrase.toLowerCase().includes(q) && !e.expression.toLowerCase().includes(q)) return false;
@@ -351,6 +351,14 @@ export default function ExpressionsPage() {
   };
 
   const togglePanel = (p: Panel) => setActivePanel((prev) => (prev === p ? null : p));
+
+  const toggleGroupCollapse = (label: string) => {
+    setCollapsedGroups((prev) => {
+      const next = new Set(prev);
+      next.has(label) ? next.delete(label) : next.add(label);
+      return next;
+    });
+  };
 
   // ── render ────────────────────────────────────────────────────
   const renderRows = (list: Expression[]) =>
@@ -559,32 +567,44 @@ export default function ExpressionsPage() {
                         {/* Split button: group | view mode */}
                         <div className="inline-flex shrink-0 border border-gray-200 dark:border-slate-600 rounded-md overflow-hidden">
                           <button
-                            onClick={() => setGroupByLabel((v) => !v)}
+                            onClick={() => {
+                              const next = !groupByLabel;
+                              setGroupByLabel(next);
+                              if (next) {
+                                const keys = new Set<string>();
+                                for (const e of expressions) keys.add(e.label ?? "Unlabeled");
+                                setCollapsedGroups(keys);
+                              } else {
+                                setCollapsedGroups(new Set());
+                              }
+                            }}
                             title={groupByLabel ? "Flat list" : "Group by label"}
                             className={`p-1.5 border-r border-gray-200 dark:border-slate-600 transition-colors ${
                               groupByLabel
-                                ? "bg-teal-50 dark:bg-teal-900/30 text-teal-700 dark:text-teal-400"
+                                ? "bg-teal-50 dark:bg-teal-900/30 text-teal-700 dark:text-teal-400 shadow-inset-neu dark:shadow-inset-neu-night"
                                 : "text-gray-600 dark:text-gray-300 hover:bg-gray-50 hover:dark:bg-slate-700"
                             }`}>
-                            {groupByLabel ? (
-                              <PiTreeViewBold className="w-4 h-4" />
+                            <PiTreeViewBold className="w-4 h-4" />
+                            {/* {groupByLabel ? (
+                              <VscListTree className="w-4 h-4" /> 
                             ) : (
-                              <VscListTree className="w-4 h-4" />
-                            )}
+                             <PiTreeViewBold className="w-4 h-4" />
+                            )} */}
                           </button>
                           <button
                             onClick={() => setViewMode((v) => (v === "list" ? "cards" : "list"))}
                             title={viewMode === "list" ? "Card view" : "List view"}
                             className={`p-1.5 transition-colors ${
                               viewMode === "cards"
-                                ? "bg-teal-50 dark:bg-teal-900/30 text-teal-600 dark:text-teal-400"
+                                ? "bg-teal-50 dark:bg-teal-900/30 text-teal-600 dark:text-teal-400 shadow-inset-neu dark:shadow-inset-neu-night"
                                 : "text-gray-500 dark:text-gray-400 hover:bg-gray-50 hover:dark:bg-slate-700"
                             }`}>
-                            {viewMode === "list" ? (
+                            <IoGridOutline className="w-4 h-4" />
+                            {/* {viewMode === "list" ? (
                               <IoGridOutline className="w-4 h-4" />
                             ) : (
                               <CiGrid2H className="w-4 h-4" />
-                            )}
+                            )} */}
                           </button>
                         </div>
                         <PillSelect
@@ -608,22 +628,23 @@ export default function ExpressionsPage() {
                           colorScheme="blue"
                           options={Array.from({ length: 10 }, (_, i) => ({ value: String(i), label: `Stage ${i}` }))}
                         />
-                        <button
-                          onClick={() => setFilterInQueue((v) => !v)}
-                          className={`text-xs rounded-full px-3 py-1 border transition-colors ${
-                            filterInQueue
-                              ? "bg-teal-50 dark:bg-teal-900/30 border-teal-200 dark:border-teal-700 text-teal-700 dark:text-teal-400"
-                              : "bg-gray-100 dark:bg-slate-700 border-gray-200 dark:border-slate-600 text-gray-500 dark:text-gray-400"
-                          }`}>
-                          In queue
-                        </button>
+                        <PillSelect
+                          value={filterInQueue}
+                          onChange={(v) => setFilterInQueue(v as "" | "in" | "out")}
+                          placeholder="Queue"
+                          colorScheme="teal"
+                          options={[
+                            { value: "in", label: "In queue" },
+                            { value: "out", label: "Not in queue" },
+                          ]}
+                        />
                         {(filterLabel || filterStatus || filterStage || filterInQueue) && (
                           <button
                             onClick={() => {
                               setFilterLabel("");
                               setFilterStatus("");
                               setFilterStage("");
-                              setFilterInQueue(false);
+                              setFilterInQueue("");
                             }}
                             className="text-xs rounded-full px-3 py-1 border border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-900/20 text-red-500 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/40 transition-colors">
                             Clear filters
@@ -658,22 +679,23 @@ export default function ExpressionsPage() {
                       colorScheme="blue"
                       options={Array.from({ length: 10 }, (_, i) => ({ value: String(i), label: `Stage ${i}` }))}
                     />
-                    <button
-                      onClick={() => setFilterInQueue((v) => !v)}
-                      className={`shrink-0 text-xs rounded-full px-3 py-1 border transition-colors ${
-                        filterInQueue
-                          ? "bg-teal-50 dark:bg-teal-900/30 border-teal-200 dark:border-teal-700 text-teal-700 dark:text-teal-400"
-                          : "bg-gray-100 dark:bg-slate-700 border-gray-200 dark:border-slate-600 text-gray-500 dark:text-gray-400"
-                      }`}>
-                      In queue
-                    </button>
+                    <PillSelect
+                      value={filterInQueue}
+                      onChange={(v) => setFilterInQueue(v as "" | "in" | "out")}
+                      placeholder="Queue"
+                      colorScheme="teal"
+                      options={[
+                        { value: "in", label: "In queue" },
+                        { value: "out", label: "Not in queue" },
+                      ]}
+                    />
                     {(filterLabel || filterStatus || filterStage || filterInQueue) && (
                       <button
                         onClick={() => {
                           setFilterLabel("");
                           setFilterStatus("");
                           setFilterStage("");
-                          setFilterInQueue(false);
+                          setFilterInQueue("");
                         }}
                         className="shrink-0 text-xs rounded-full px-3 py-1 border border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-900/20 text-red-500 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/40 transition-colors">
                         Clear
@@ -824,14 +846,31 @@ export default function ExpressionsPage() {
                 </button>
               </div>
             ) : groupByLabel && grouped ? (
-              Array.from(grouped.entries()).map(([label, items]) => (
-                <div key={label}>
-                  <div className="sticky top-0 bg-zinc-300 dark:bg-slate-900 px-4 py-1.5 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide border-b border-gray-200 dark:border-slate-700">
-                    {label} ({items.length})
+              Array.from(grouped.entries()).map(([label, items]) => {
+                const isCollapsed = collapsedGroups.has(label);
+                return (
+                  <div key={label}>
+                    <div
+                      onClick={() => toggleGroupCollapse(label)}
+                      className="sticky top-0 bg-zinc-200 dark:bg-slate-700 dark:text-gray-100  px-4 py-1.5 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide border-b border-gray-200 dark:border-slate-700 cursor-pointer hover:bg-zinc-300 dark:hover:bg-slate-800 flex items-center justify-between select-none transition-colors">
+                      <span>
+                        {label} ({items.length})
+                      </span>
+                      <svg
+                        className={`w-3.5 h-3.5 transition-transform duration-200 ${isCollapsed ? "" : "rotate-180"}`}
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2.5"
+                        strokeLinecap="round"
+                        strokeLinejoin="round">
+                        <path d="M6 9l6 6 6-6" />
+                      </svg>
+                    </div>
+                    {!isCollapsed && renderRows(items)}
                   </div>
-                  {renderRows(items)}
-                </div>
-              ))
+                );
+              })
             ) : (
               renderRows(expressions)
             )}

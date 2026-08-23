@@ -22,24 +22,24 @@ interface Props {
 
 const SCHEMES: Record<ColorScheme, { idle: string; selected: string; active: string }> = {
   teal: {
-    idle: "bg-teal-100/50 dark:bg-teal-900/20 border-teal-100 dark:border-teal-800 text-teal-400 dark:text-teal-600",
+    idle: "bg-teal-100/50 dark:bg-teal-900/20 border-teal-100 dark:border-teal-800 text-teal-500 dark:text-teal-600",
     selected: "bg-teal-50 dark:bg-teal-900/40 border-teal-200 dark:border-teal-700 text-teal-700 dark:text-teal-400",
     active: "text-teal-600 dark:text-teal-400",
   },
   violet: {
-    idle: "bg-violet-100/50 dark:bg-violet-900/20 border-violet-100 dark:border-violet-800 text-violet-400 dark:text-violet-600",
+    idle: "bg-violet-100/50 dark:bg-violet-900/20 border-violet-100 dark:border-violet-800 text-violet-500 dark:text-violet-600",
     selected:
       "bg-violet-50 dark:bg-violet-900/40 border-violet-200 dark:border-violet-700 text-violet-700 dark:text-violet-400",
     active: "text-violet-600 dark:text-violet-400",
   },
   amber: {
-    idle: "bg-amber-100/50 dark:bg-amber-900/20 border-amber-100 dark:border-amber-800 text-amber-400 dark:text-amber-600",
+    idle: "bg-amber-100/50 dark:bg-amber-900/20 border-amber-100 dark:border-amber-800 text-amber-500 dark:text-amber-600",
     selected:
       "bg-amber-50 dark:bg-amber-900/30 border-amber-200 dark:border-amber-700 text-amber-700 dark:text-amber-400",
     active: "text-amber-600 dark:text-amber-400",
   },
   blue: {
-    idle: "bg-blue-100/50 dark:bg-blue-900/20 border-blue-100 dark:border-blue-800 text-blue-400 dark:text-blue-600",
+    idle: "bg-blue-100/50 dark:bg-blue-900/20 border-blue-100 dark:border-blue-800 text-blue-500 dark:text-blue-600",
     selected: "bg-blue-50 dark:bg-blue-900/30 border-blue-200 dark:border-blue-700 text-blue-700 dark:text-blue-400",
     active: "text-blue-600 dark:text-blue-400",
   },

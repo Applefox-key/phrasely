@@ -412,14 +412,18 @@ export default function TrainingPage() {
             <span>{hint[0]}</span>
             {hintCount > 0 && (
               <div className="flex gap-1">
-                {Array.from({ length: hintCount }).map((_, i) => (
-                  <span
-                    key={i}
-                    className={`w-3 h-3 rounded-full border-2 ${
-                      i < readCount ? "bg-teal-500 border-teal-500" : "border-teal-400 dark:border-teal-600"
-                    }`}
-                  />
-                ))}
+                {Array.from({ length: hintCount }).map((_, i) => {
+                  const filled = i < readCount;
+                  return (
+                    <span
+                      key={filled ? `f-${i}` : `e-${i}`}
+                      style={filled ? { animation: "dot-pop 0.35s ease" } : undefined}
+                      className={`w-3 h-3 rounded-full border-2 ${
+                        filled ? "bg-teal-500 border-teal-500" : "border-teal-400 dark:border-teal-600"
+                      }`}
+                    />
+                  );
+                })}
               </div>
             )}
           </div>

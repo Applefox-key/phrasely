@@ -49,8 +49,8 @@ export default function EditModal({ expression, labels, initialTab, onSave, onCl
   };
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white dark:bg-slate-800 rounded-lg shadow-xl w-full max-w-[100vw] sm:max-w-lg max-h-[90vh] flex flex-col">
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 sm:p-4">
+      <div className="bg-white dark:bg-slate-800 sm:rounded-lg shadow-xl w-full sm:max-w-lg h-full sm:h-auto sm:max-h-[90vh] flex flex-col">
         {/* Header */}
         <div className="flex items-center justify-between p-4 bg-stone-300 dark:bg-slate-700 border-b border-gray-200 dark:border-slate-700 shrink-0">
           <h2 className="font-semibold text-gray-900 dark:text-gray-100">Expression Details</h2>
@@ -105,7 +105,7 @@ export default function EditModal({ expression, labels, initialTab, onSave, onCl
               </div>
             </div>
 
-            <div className="p-4 space-y-3 border-t border-gray-100 dark:border-slate-700">
+            <div className="p-4 space-y-3 border-t border-gray-100 dark:border-slate-700 pb-24 sm:pb-4">
               <div className="flex items-center gap-4">
                 <label className="text-sm font-medium text-gray-700 dark:text-gray-300 shrink-0">Status</label>
                 <PillSelect
@@ -159,7 +159,7 @@ export default function EditModal({ expression, labels, initialTab, onSave, onCl
                 )}
               </div>
 
-              <div className="flex gap-3 pt-1">
+              <div className="fixed bottom-0 left-0 right-0 sm:static bg-white dark:bg-slate-800 sm:bg-transparent border-t border-gray-100 dark:border-slate-700 sm:border-0 p-4 sm:p-0 sm:pt-1 flex gap-3 z-10">
                 <button
                   type="submit"
                   className="flex-1 bg-teal-600 hover:bg-teal-700 text-white font-medium py-2 px-4 rounded-md transition-colors">

@@ -17,7 +17,7 @@ import { useMobileNavStore } from "../../shared/mobileNavStore";
 export default function TrainingPage() {
   const navigate = useNavigate();
   const qc = useQueryClient();
-  const offset = new Date().getTimezoneOffset() * 60 * 1000 * -1;
+  const offset = new Date().getTimezoneOffset() * 60 * 1000;
   const isDemo = useAuthStore((s) => s.isDemo);
   const demoStore = useDemoStore();
 
